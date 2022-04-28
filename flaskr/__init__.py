@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -7,11 +5,9 @@ from flask_jwt_extended import JWTManager
 
 from flaskr import auth, generics, user
 from services.config import Config
-from services.database import db_session, init_db
 from services.utilities import Utilities
 
-from datetime import datetime
-from os import path, system
+from os import path, system as os_system
 
 # Get configuration, create Flask application
 config = Config().get_config()
@@ -21,8 +17,8 @@ def create_app():
     app = Flask(config.application.name)
 
     # Set host configuration
-    os.system(f"set FLASK_RUN_HOST={config.server.host}")
-    os.system(f"set FLASK_RUN_PORT={config.server.port}")
+    os_system(f"set FLASK_RUN_HOST={config.server.host}")
+    os_system(f"set FLASK_RUN_PORT={config.server.port}")
 
     # Setup configuration
     app.config.from_mapping(
@@ -47,7 +43,7 @@ def create_app():
     jwt = JWTManager(app).init_app(app)
 
     # @app.before_first_request
-    # def create_user():
+    # def first_time_run():
     #     init_db()
     #     db_session.add(name="Deadly", last_name="Alden", email="deadly@gmail.com",
     #                    created_at=datetime.now(), rank="", admin=True, password="ello")
