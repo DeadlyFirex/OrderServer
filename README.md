@@ -7,7 +7,8 @@ Application built in pure Python, acts as an REST API.\
 Made with Flask and several extensions and uses JWT to authenticate
 
 ### Installation
-The main file `application.py` is your target.\
+Looking in the flaskr folder, the init file is the file to run.\
+It is however recommended to run the application through flask itself.\
 You can run the app on Linux by executing
 ```
 /usr/bin/python3 -m flask run -h 0.0.0.0 -p 8000
