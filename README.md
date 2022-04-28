@@ -1,4 +1,4 @@
-## StrykerBackend
+## OrderServer
 [![Python package](https://github.com/DeadlyFirex/OrderServer/actions/workflows/python-package.yml/badge.svg)](https://github.com/DeadlyFirex/OrderServer/actions/workflows/python-package.yml) \
 Backend for the order applications, does all the processing for all the applications ran.
 
