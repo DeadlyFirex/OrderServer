@@ -27,16 +27,3 @@ def get_version():
     """
 
     return {"status": 301, "link": config.server.version}, 301
-
-
-@generics.route("/test", methods=['GET'])
-def get_test():
-    """
-    Simply checks the connection status and if the application exists.\n
-    You have to log in for this, in a sense checks authentication
-
-    :return: JSON-form representing aliveness?
-    """
-
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200

@@ -24,7 +24,6 @@ class Product(Base):
     ingredients = Column(PickleType, default=[], nullable=True)
 
     # Product nutrition information
-
     energy = Column(Float, nullable=True)
     fat = Column(Float, nullable=True)
     saturated_fat = Column(Float, nullable=True)

@@ -1,20 +1,20 @@
 from uuid import uuid4
 from services.utilities import Utilities
 from services.database import Base
+from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Column, Integer, String, PickleType
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
     # User-specific information
     id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
     uuid = Column(String, nullable=False, unique=True, default=str(uuid4()))
     username = Column(String, nullable=False, unique=True)
-    initial = Column(String, nullable=False)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     email = Column(String, nullable=False, unique=True)
-    created_at = Column(DateTime, nullable=False)
-    country = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    country = Column(String, nullable=True, default="NL")
 
     # Clearance/security/authentication
     flags = Column(PickleType, nullable=False, default=[])
@@ -22,7 +22,6 @@ class User(Base):
     password = Column(String, nullable=False)
     secret = Column(String, nullable=True, unique=True, default=Utilities.generate_secret())
     token = Column(String, nullable=True, unique=True, default=None)
-    roles = Column(String, nullable=True, default=None)
     tags = Column(PickleType, nullable=False, default=[])
 
     # Tracking
