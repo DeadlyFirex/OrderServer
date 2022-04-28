@@ -1,6 +1,6 @@
 ## StrykerBackend
-[![Python package](https://github.com/DeadlyFirex/StrykerBackend/actions/workflows/python-package.yml/badge.svg)](https://github.com/DeadlyFirex/StrykerBackend/actions/workflows/python-package.yml) \
-Backend for the Strykers applications, does all the processing for all the applications we run.
+[![Python package](https://github.com/DeadlyFirex/OrderServer/actions/workflows/python-package.yml/badge.svg)](https://github.com/DeadlyFirex/OrderServer/actions/workflows/python-package.yml) \
+Backend for the order applications, does all the processing for all the applications ran.
 
 ### Description
 Application built in pure Python, acts as an REST API.\
@@ -15,7 +15,7 @@ You can run the app on Linux by executing
 Docker support will soon be available.
 
 ### Roadmap
-The roadmap can be found right [here](https://github.com/DeadlyFirex/StrykerBackend/projects/1) \
+The roadmap can be found right [here](https://github.com/DeadlyFirex/OrderServer/projects/1) \
 Vision for the project is quite simple.
 
 ### Configuration
