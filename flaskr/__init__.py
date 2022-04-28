@@ -3,7 +3,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 
-from flaskr import auth, generics, user
+from flaskr import auth, generics, user, product, admin
 from services.config import Config
 from services.utilities import Utilities
 
@@ -38,6 +38,8 @@ def create_app():
     app.register_blueprint(generics.generics)
     app.register_blueprint(auth.auth)
     app.register_blueprint(user.user)
+    app.register_blueprint(product.product)
+    app.register_blueprint(admin.admin)
 
     # Register JWT
     jwt = JWTManager(app).init_app(app)

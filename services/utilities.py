@@ -98,16 +98,14 @@ class Utilities:
         """
         result = {
             "uuid": user.uuid,
-            "name": user.initial,
-            "last_name": user.name,
-            "country": user.country,
+            "name": user.name,
             "username": user.username,
+            "country": user.country,
 
             "admin": user.admin,
-            "rank": user.rank,
             "tags": user.tags,
-            "certifications": user.certifications,
-            "squad": user.squad
+
+            "active": user.active
         }
         if code is not None:
             return result, code
