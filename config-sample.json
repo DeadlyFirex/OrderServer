@@ -1,0 +1,23 @@
+{
+  "application": {
+    "name": "StrykerBackend",
+    "debug": true
+  },
+  "server": {
+    "host": "localhost",
+    "port": 8000,
+    "version": "/v1/"
+  },
+  "security": {
+    "character_list": "abcd-$.01234567890",
+    "secret_length": 16
+  },
+  "ratelimiting": {
+    "default": "10 per second"
+  },
+  "database": {
+    "local": true,
+    "filename": "flaskr.db",
+    "absolute_path": "full/path/to/flaskr.db"
+  }
+}

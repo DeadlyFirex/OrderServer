@@ -1,0 +1,10 @@
+include config-sample.json
+include LICENSE
+include .gitignore
+include SECURITY.md
+include requirements.txt
+
+prune venv
+exclude config.json
+global-exclude *.pyc
+global-exclude *.db
