@@ -13,7 +13,7 @@ class User(Base):
     # TODO: Add phone number/address if deemed necessary
     __tablename__ = 'users'
     # User-specific information
-    id: int = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    id: int = Column(Integer, primary_key=True, nullable=False, unique=True)
     uuid: str = Column(String, nullable=False, unique=True, default=str(uuid4()))
     username: str = Column(String, nullable=False, unique=True)
     name: str = Column(String, nullable=False, unique=True)

@@ -10,8 +10,8 @@ from dataclasses import dataclass
 class Product(Base):
     __tablename__ = 'products'
     # Core information
-    id: int = Column(Integer, nullable=False, unique=True)
-    uuid: str = Column(String(36), primary_key=True, default=str(uuid4()))
+    id: int = Column(Integer, nullable=False, unique=True, primary_key=True)
+    uuid: str = Column(String(36), default=str(uuid4()))
     name: str = Column(String, nullable=False, unique=True)
     brand: str = Column(String, nullable=False)
     price: float = Column(Float, nullable=False)
