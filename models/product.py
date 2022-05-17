@@ -11,7 +11,7 @@ class Product(Base):
     __tablename__ = 'products'
     # Core information
     id: int = Column(Integer, nullable=False, unique=True, primary_key=True)
-    uuid: str = Column(String(36), default=str(uuid4()))
+    uuid: str = Column(String(36), nullable=False, default=str(uuid4()))
     name: str = Column(String, nullable=False, unique=True)
     brand: str = Column(String, nullable=False)
     price: float = Column(Float, nullable=False)
@@ -19,7 +19,7 @@ class Product(Base):
     # Unique product information
     category: str = Column(String, nullable=False)
     description: str = Column(String, nullable=False)
-    image: str = Column(String, nullable=True)
+    image: str = Column(String, nullable=False)
     image_path: str = Column(String, nullable=False)
     original_link: str = Column(String, nullable=False)
 

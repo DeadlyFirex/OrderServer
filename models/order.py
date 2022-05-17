@@ -11,8 +11,8 @@ from dataclasses import dataclass
 class Order(Base):
     __tablename__ = 'orders'
     # Core information
-    id: int = Column(Integer, nullable=False, unique=True, primary_key=True)
-    uuid: str = Column(String(36), primary_key=True, default=str(uuid4()))
+    id: int = Column(Integer, primary_key=True, nullable=False, unique=True, )
+    uuid: str = Column(String(36), nullable=False, default=str(uuid4()))
     user: str = Column(String, nullable=False)
     products: list = Column(PickleType, nullable=False, default=[])
     total_price: float = Column(Float, nullable=False)
@@ -22,7 +22,7 @@ class Order(Base):
     event: str = Column(String, nullable=False)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow())
     last_changed_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow())
-    open: bool = Column(Boolean, nullable=False, default=True)
+    expired: bool = Column(Boolean, nullable=False, default=False)
     completed: bool = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self):

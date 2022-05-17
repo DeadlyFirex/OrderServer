@@ -82,7 +82,7 @@ def get_product(uuid):
 
 @product.route("/last_changed", methods=['GET'])
 @jwt_required()
-def get_product(uuid):
+def get_product_last_changed(uuid):
     """
     TODO: Update this docstring
     Simply checks the connection status and if the application exists.
