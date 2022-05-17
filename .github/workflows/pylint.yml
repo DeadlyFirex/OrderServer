@@ -42,7 +42,7 @@ jobs:
         pytest || exit $(( $? == 5 ? 0 : $? ))
     - name: Test running with Flask
       run: |
-        export FLASK_APP=application
+        export FLASK_APP=flaskr:create_app
         export FLASK_ENV=development
         mv config-sample.json config.json
         timeout 15 python -m flask run -h 127.0.0.1 -p 8000 || exit $(( $? == 124 ? 0 : $? ))
