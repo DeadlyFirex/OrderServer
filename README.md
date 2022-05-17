@@ -1,5 +1,5 @@
 ## OrderServer
-[![Python package](https://github.com/DeadlyFirex/OrderServer/actions/workflows/python-package.yml/badge.svg)](https://github.com/DeadlyFirex/OrderServer/actions/workflows/python-package.yml) \
+[![Python package](https://github.com/DeadlyFirex/OrderServer/actions/workflows/pylint.yml/badge.svg)](https://github.com/DeadlyFirex/OrderServer/actions/workflows/pylint.yml) \
 Backend for the order applications, does all the processing for all the applications ran.
 
 ### Description

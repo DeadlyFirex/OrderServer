@@ -1,6 +1,6 @@
 {
   "application": {
-    "name": "StrykerBackend",
+    "name": "OrderServer",
     "debug": true
   },
   "server": {
