@@ -25,7 +25,7 @@ def populate_all_products():
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()
@@ -34,16 +34,18 @@ def populate_all_products():
     user.last_action_at = datetime.utcnow()
 
     db_session.commit()
+    start_time = datetime.now()
 
     # Load in file
     from json import load
-    result = load(open("./static/products.json"))[
-        "products"]  # TODO: Fix this path
+    result = load(open("./static/products.json"))["products"]  # TODO: Fix this path
 
     # Remove old entries
     db_session.query(Product).delete()
 
+    count = 0
     for product in result:
+        count += 1
         new_product = Product(id=product["id"],
                               uuid=str(uuid4()),
                               name=product["name"],
@@ -74,4 +76,9 @@ def populate_all_products():
         db_session.add(new_product)
     db_session.commit()
 
-    return Utilities.return_success()
+    time = (datetime.now() - start_time).total_seconds() * 1000
+    return Utilities.return_complex_response(200, f"Successfully repopulated {count} products in {time}ms",
+                                             {"count": count,
+                                              "time": f"{time}ms"
+                                              }
+                                             )

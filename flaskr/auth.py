@@ -24,12 +24,12 @@ def post_login():
         username = request.json.get("username", None)
         password = request.json.get("password", None)
     except AttributeError:
-        return Utilities.return_bad_request()
+        return Utilities.return_response(400, "Bad request, expected username/password field")
 
     user = User.query.filter_by(username=username, password=password).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     lifetime = Utilities.generate_token_timedelta()
     user.token = create_access_token(identity=user.uuid, fresh=False, expires_delta=lifetime,
@@ -58,7 +58,7 @@ def get_test_login():
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()
@@ -84,7 +84,7 @@ def get_admin_test_login():
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()

@@ -26,7 +26,7 @@ def get_all_products():
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()
@@ -39,7 +39,7 @@ def get_all_products():
     local_products = Product.query.all()
 
     if local_products is None or []:
-        return Utilities.return_not_found()
+        return Utilities.return_response(404, "No products found")
 
     result = []
 
@@ -62,7 +62,7 @@ def get_product(uuid):
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()
@@ -75,7 +75,7 @@ def get_product(uuid):
     local_products = Product.query.filter_by(uuid=uuid).first()
 
     if local_products is None or []:
-        return Utilities.return_not_found()
+        return Utilities.return_response(404, f"Product <{uuid}> not found")
 
     return {"result": local_products}, 200
 
@@ -93,16 +93,16 @@ def get_product_last_changed(uuid):
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()
     user.last_login_ip = request.remote_addr
-    user.last_action = "GET_PRODUCT_LAST_CHANGED"
+    user.last_action = "GET_PRODUCTs_LAST_CHANGED"
     user.last_action_at = datetime.utcnow()
 
     db_session.commit()
 
     # TODO: Implement this
 
-    return Utilities.return_success()
+    return Utilities.return_response(200, "This is a message")

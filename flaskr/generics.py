@@ -1,6 +1,7 @@
 from flask import Blueprint
 
 from services import config
+from services.utilities import Utilities
 
 config = config.Config().get_config()
 generics = Blueprint('generics', __name__, url_prefix='/')
@@ -14,7 +15,7 @@ def get_health():
     :return: JSON-form representing aliveness?
     """
 
-    return {"status": 200, "health": "ok"}, 200
+    return Utilities.return_response(200, "ok")
 
 
 @generics.route("/version", methods=['GET'])
@@ -25,4 +26,4 @@ def get_version():
     :return: JSON-form representing version prefix
     """
 
-    return {"status": 301, "link": config.server.version}, 301
+    return Utilities.return_complex_response(301, "ok", {"link": config.server.version})

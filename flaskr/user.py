@@ -19,12 +19,12 @@ def get_user(uuid):
     :return: JSON-form representing aliveness?
     """
     if not Utilities.is_valid_uuid(uuid):
-        return Utilities.return_bad_request()
+        return Utilities.return_response(400, "Expected UUID, received something else.")
 
     local_user = User.query.filter_by(uuid=uuid).first()
 
     if local_user is None:
-        return Utilities.return_not_found()
+        return Utilities.return_response(404, f"User <{uuid}> not found.")
 
     return Utilities.generate_public_user_payload(local_user)
 
@@ -41,7 +41,7 @@ def get_all_users():
     local_users = User.query.all()
 
     if local_users is None or []:
-        return Utilities.return_not_found()
+        return Utilities.return_response(404, "No users were found.")
 
     result = []
 
@@ -60,11 +60,11 @@ def get_admin_user(uuid):
     :return: JSON-form representing aliveness?
     """
     if not Utilities.is_valid_uuid(uuid):
-        return Utilities.return_bad_request()
+        return Utilities.return_response(400, "Expected UUID, received something else.")
 
     local_user = User.query.filter_by(uuid=uuid).first()
 
     if local_user is None:
-        return Utilities.return_not_found()
+        return Utilities.return_response(404, f"User <{uuid}> not found.")
 
     return Utilities.generate_public_user_payload(local_user)

@@ -20,21 +20,25 @@ order = Blueprint('order', __name__, url_prefix='/order')
 @jwt_required()
 def post_order():
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
+    current_event = Event.query.filter_by(active=True).first()
 
     if user is None:
-        return Utilities.return_unauthorized()
+        return Utilities.return_response(401, "Unauthorized")
 
     user.active = True
     user.last_login_at = datetime.utcnow()
     user.last_login_ip = request.remote_addr
-    user.last_action = "GET_ALL_PRODUCTS"
+    user.last_action = "POST_NEW_ORDER"
     user.last_action_at = datetime.utcnow()
+
+    if Order.query.filter_by(uuid=user.uuid, event=current_event) is not None:
+        return
 
     try:
         user = user.uuid
         notes = request.json.get("notes", None)
         total_price = 0.0
-        event = Event.query.filter_by(active=True).first()
+        event = current_event
         products = request.json.get("products", None)
 
         if not isinstance(products, list):
@@ -64,4 +68,7 @@ def post_order():
     db_session.add(new_order)
     db_session.commit()
 
-    return Utilities.return_success()
+    return Utilities.return_complex_response(201, "Successfully created new order", {"products": products,
+                                                                                     "event": event.uuid,
+                                                                                     "notes": notes,
+                                                                                     "price": total_price})

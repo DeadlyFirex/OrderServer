@@ -39,30 +39,6 @@ class Utilities:
         return result
 
     @staticmethod
-    def return_unauthorized(text=None):
-        """
-        Generates an Unauthorized: 401 response.
-        Returns a dictionary.
-
-        :return: Dictionary
-        """
-        if text is not None:
-            return {"status": 401, "result": text}, 401
-        return {"status": 401, "result": "Unauthorized, wrong email or password."}, 401
-
-    @staticmethod
-    def return_bad_request(text=None):
-        """
-        Generates an Bad Request: 400 response.
-        Returns a dictionary.
-
-        :return: Dictionary
-        """
-        if text is not None:
-            return {"status": 400, "result": text}, 400
-        return {"status": 400, "result": "Bad request, necessary data is not provided"}, 400
-
-    @staticmethod
     def generate_token_timedelta():
         """
         Generates a token timedelta
@@ -112,61 +88,33 @@ class Utilities:
         return result
 
     @staticmethod
-    def return_success():
+    def return_response(status=200, message="This is a message"):
         """
-        Generates an OK: 200 response.
+        Generates an JSON response.
         Returns a dictionary.
 
         :return: Dictionary
         """
         result = {
-            "status": 200,
-            "health": "ok"
+            "status": status,
+            "message": message
         }
-        return result, 200
+        return result, status
 
     @staticmethod
-    def return_forbidden():
+    def return_complex_response(status=200, message="This is a message", details=None):
         """
-        Generates an FORBIDDEN: 403 response.
+        Generates an JSON response.
         Returns a dictionary.
 
         :return: Dictionary
         """
         result = {
-            "status": 403,
-            "health": "Access denied"
+            "status": status,
+            "message": message,
+            "details": details
         }
-        return result, 403
-
-    @staticmethod
-    def return_not_found(text="Not found"):
-        """
-        Generates an NOT FOUND: 404 response.
-        Returns a dictionary.
-
-        :return: Dictionary
-        """
-        result = {
-            "status": 404,
-            "response": text
-        }
-        return result, 404
-
-    @staticmethod
-    def return_teapot(text="Bad endpoint"):
-        """
-        Generates an ``I'm a teapot``: 418 response.\n
-        This is used to tell the clients you used the wrong endpoint.
-        Returns a dictionary.
-
-        :return: Dictionary
-        """
-        result = {
-            "status": 418,
-            "response": text
-        }
-        return result, 418
+        return result, status
 
     @staticmethod
     def is_valid_uuid(value):
@@ -187,7 +135,7 @@ def admin_required():
             if user.admin:
                 return fn(*args, **kwargs)
             else:
-                return Utilities.return_forbidden()
+                return Utilities.return_response(403, "Forbidden, no rights to access admin resources")
         return decorator
     return wrapper
 
