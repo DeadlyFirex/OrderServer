@@ -4,10 +4,10 @@ from random import choice
 from functools import wraps
 from uuid import UUID
 
-from services import config
+from services.config import Config
 from datetime import timedelta
 
-config = config.Config().get_config()
+config = Config().get_config()
 
 
 class Utilities:

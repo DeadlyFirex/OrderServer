@@ -2,11 +2,11 @@ from flask import Blueprint
 from flask_jwt_extended import jwt_required
 
 from models.user import User
-from services import config
+from services.config import Config
 from services.database import db_session
 from services.utilities import Utilities, admin_required
 
-config = config.Config().get_config()
+config = Config().get_config()
 user = Blueprint('user', __name__, url_prefix='/user')
 
 

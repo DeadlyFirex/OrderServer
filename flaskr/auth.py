@@ -1,14 +1,14 @@
 from flask import Blueprint, request
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from services.database import db_session
 from models.user import User
-from services import config
+from services.database import db_session
+from services.config import Config
 from services.utilities import Utilities, admin_required
 
 from datetime import datetime
 
-config = config.Config().get_config()
+config = Config().get_config()
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
 

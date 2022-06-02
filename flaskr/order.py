@@ -1,18 +1,18 @@
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from services.database import db_session
 from models.event import Event
 from models.user import User
 from models.order import Order
 from models.product import Product
-from services import config
+from services.database import db_session
+from services.config import Config
 from services.utilities import Utilities, admin_required
 
 from datetime import datetime
 from uuid import uuid4
 
-config = config.Config().get_config()
+config = Config().get_config()
 order = Blueprint('order', __name__, url_prefix='/order')
 
 

@@ -1,17 +1,18 @@
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity
 
-from services.database import db_session
 from models.user import User
 from models.product import Product
-from services import config
+from models.data import Data
+from services.database import db_session
+from services.config import Config
 from services.utilities import Utilities, admin_required
 
 
 from uuid import uuid4
 from datetime import datetime
 
-config = config.Config().get_config()
+config = Config().get_config()
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 
@@ -74,11 +75,17 @@ def populate_all_products():
                               salt=product["salt"],
                               extra=product["extra"])
         db_session.add(new_product)
+
+    # Rehash and restamp
+    data = Data.query.first()
+    data.generate_hash("products")
+    data.generate_timestamp("products")
+
+    db_session.add(data)
     db_session.commit()
 
-    time = (datetime.now() - start_time).total_seconds() * 1000
+    time = round((datetime.now() - start_time).total_seconds() * 1000, 2)
     return Utilities.return_complex_response(200, f"Successfully repopulated {count} products in {time}ms",
                                              {"count": count,
                                               "time": f"{time}ms"
-                                              }
-                                             )
+                                              })

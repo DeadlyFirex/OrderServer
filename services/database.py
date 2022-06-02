@@ -14,5 +14,5 @@ Base.query = db_session.query_property()
 
 
 def init_db():
-    from models import user, product, order, event
+    from models import user, product, order, event, data
     Base.metadata.create_all(bind=engine)

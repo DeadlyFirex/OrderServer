@@ -1,9 +1,10 @@
 from flask import Blueprint
 
-from services import config
+from models.data import Data
+from services.config import Config
 from services.utilities import Utilities
 
-config = config.Config().get_config()
+config = Config().get_config()
 generics = Blueprint('generics', __name__, url_prefix='/')
 
 
@@ -27,3 +28,14 @@ def get_version():
     """
 
     return Utilities.return_complex_response(301, "ok", {"link": config.server.version})
+
+
+@generics.route("/last_changed", methods=['GET'])
+def get_last_changed():
+    """
+    Gets the current running version from the configuration, and uses it.
+
+    :return: JSON-form representing version prefix
+    """
+
+    return {"status": 200, "message": "Fetched result successfully", "result": Data.query.first()}, 200
