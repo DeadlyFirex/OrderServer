@@ -29,7 +29,8 @@ setup(
         "SQLAlchemy",
         "Flask-SQLAlchemy",
         "flask-jwt-extended[asymmetric_crypto]",
-        "Flask-Limiter"
+        "Flask-Limiter",
+        "bcrypt"
     ],
     python_requires=">=3.10",
 )
