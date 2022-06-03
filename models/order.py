@@ -26,5 +26,5 @@ class Order(Base):
     completed: bool = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self):
-        return f"<Order {self.name}>"
+        return f"<Order {self.uuid}>"
 

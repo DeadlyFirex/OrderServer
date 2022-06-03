@@ -2,9 +2,14 @@ from flask import Flask
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
+from sqlalchemy.exc import OperationalError
 
-from flaskr import auth, generics, user, product, admin, order
+from flaskr import admin, auth, generics, order, product, user, event
+from models.data import Data
+from models.user import User
+from models.event import Event
 from services.config import Config
+from services.database import init_db
 from services.utilities import Utilities
 
 from os import path, system as os_system
@@ -31,26 +36,39 @@ def create_app():
 
     # Configure blueprints/views and ratelimiting
     limiter = Limiter(app, key_func=get_remote_address, default_limits=[config.ratelimiting.default])
-    limiter.limit(config.ratelimiting.default)(generics.generics)
+    limiter.limit(config.ratelimiting.default)(admin.admin)
     limiter.limit(config.ratelimiting.default)(auth.auth)
+    limiter.limit(config.ratelimiting.default)(generics.generics)
+    limiter.limit(config.ratelimiting.default)(order.order)
+    limiter.limit(config.ratelimiting.default)(product.product)
     limiter.limit(config.ratelimiting.default)(user.user)
+    limiter.limit(config.ratelimiting.default)(event.event)
 
-    app.register_blueprint(generics.generics)
-    app.register_blueprint(auth.auth)
-    app.register_blueprint(user.user)
-    app.register_blueprint(product.product)
     app.register_blueprint(admin.admin)
+    app.register_blueprint(auth.auth)
+    app.register_blueprint(generics.generics)
     app.register_blueprint(order.order)
+    app.register_blueprint(product.product)
+    app.register_blueprint(user.user)
+    app.register_blueprint(event.event)
 
     # Register JWT
     jwt = JWTManager(app).init_app(app)
 
-    # @app.before_first_request
-    # def first_time_run():
-    #     init_db()
-    #     db_session.add(name="Deadly", last_name="Alden", email="deadly@gmail.com",
-    #                    created_at=datetime.now(), rank="", admin=True, password="ello")
-    #     db_session.commit()
+    @app.before_first_request
+    def first_time_run():
+        app.logger.info("Checking for database initialization.")
+        try:
+            result = (User.query.all(), Event.query.all(), Data.query.all())
+        except OperationalError:
+            init_db()
+            app.logger.info("Performing new database initialization.")
+            return
+        if None in result or [] in result:
+            init_db()
+            app.logger.info("Repopulating database tables.")
+            return
+        app.logger.info("Finished checking, no new initialization required.")
 
     return app
 

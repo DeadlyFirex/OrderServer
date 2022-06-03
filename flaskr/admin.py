@@ -5,23 +5,23 @@ from models.user import User
 from models.product import Product
 from models.data import Data
 from services.database import db_session
-from services.config import Config
 from services.utilities import Utilities, admin_required
-
 
 from uuid import uuid4
 from datetime import datetime
 
-config = Config().get_config()
+# Configure blueprint
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 @admin.route("/product/populate", methods=['GET'])
 @admin_required()
-def populate_all_products():
+def get_populate_products():
     """
-    Populate all products in the database
-    :return: None
+    Populate all products in the database.\n
+    This is retrieved from the products.json.
+
+    :return: JSON result of operation.
     """
     user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
@@ -39,7 +39,7 @@ def populate_all_products():
 
     # Load in file
     from json import load
-    result = load(open("./static/products.json"))["products"]  # TODO: Fix this path
+    result = load(open("./static/products.json"))["products"]
 
     # Remove old entries
     db_session.query(Product).delete()
@@ -76,7 +76,7 @@ def populate_all_products():
                               extra=product["extra"])
         db_session.add(new_product)
 
-    # Rehash and restamp
+    # Rehash and re-stamp
     data = Data.query.first()
     data.generate_hash("products")
     data.generate_timestamp("products")

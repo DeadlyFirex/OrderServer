@@ -33,9 +33,9 @@ def get_version():
 @generics.route("/last_changed", methods=['GET'])
 def get_last_changed():
     """
-    Gets the current running version from the configuration, and uses it.
+    Retrieves last changed data and returns it.
 
-    :return: JSON-form representing version prefix
+    :return: JSON in result template, last_changed row from data.
     """
 
-    return {"status": 200, "message": "Fetched result successfully", "result": Data.query.first()}, 200
+    return Utilities.return_result(200, "Fetched result successfully", Data.query.first())

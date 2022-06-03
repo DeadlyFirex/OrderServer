@@ -15,4 +15,12 @@ Base.query = db_session.query_property()
 
 def init_db():
     from models import user, product, order, event, data
+    user = user.User(name="Example Administrator", username="admin", email="admin@administrator.com", admin=True,
+                password="admin", address="Example", phone_number="0612345678", postal_code="1234AB")
+    event = event.Event()
+    data = data.Data()
     Base.metadata.create_all(bind=engine)
+    db_session.add(user)
+    db_session.add(event)
+    db_session.add(data)
+    db_session.commit()

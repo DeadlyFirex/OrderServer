@@ -19,11 +19,13 @@ class Data(Base):
     events_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
     products_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
     orders_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
+    users_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
 
     # Time-tracking
     events_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())
     products_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())
     orders_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())
+    users_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())
 
     def generate_hash(self, model):
         result = md5(Utilities.generate_secret().encode("UTF-8")).hexdigest()
@@ -33,6 +35,8 @@ class Data(Base):
             self.products_hash = result
         elif model == "orders":
             self.orders_hash = result
+        elif model == "users":
+            self.users_hash = result
         else:
             raise ValueError()
 
@@ -44,5 +48,7 @@ class Data(Base):
             self.products_last_changed = result
         elif model == "orders":
             self.orders_last_changed = result
+        elif model == "users":
+            self.users_last_changed = result
         else:
             raise ValueError()

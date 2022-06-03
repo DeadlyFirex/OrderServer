@@ -3,28 +3,33 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 
 from models.user import User
 from services.database import db_session
-from services.config import Config
 from services.utilities import Utilities, admin_required
 
 from datetime import datetime
 
-config = Config().get_config()
+
+# Configure blueprint
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
 
 @auth.route("/login", methods=['POST'])
 def post_login():
     """
-    TODO: Update this docstring
-    Simply checks the connection status and if the application exists.
+    Logs a user in, returns a JWT token for authentication.
 
-    :return: JSON-form representing aliveness?
+    :return: JSON with JWT token.
     """
     try:
         username = request.json.get("username", None)
         password = request.json.get("password", None)
-    except AttributeError:
-        return Utilities.return_response(400, "Bad request, expected username/password field")
+
+        if not isinstance(username, str):
+            raise ValueError(f"Expected str, instead got {type(username)}")
+        if not isinstance(password, str):
+            raise ValueError(f"Expected str, instead got {type(password)}")
+
+    except AttributeError as e:
+        return Utilities.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
 
     user = User.query.filter_by(username=username, password=password).first()
 
@@ -42,15 +47,17 @@ def post_login():
 
     db_session.commit()
 
-    return {"status": 200, "token": user.token, "lifetime": lifetime.total_seconds()}, 200
+    return Utilities.return_custom_response(200, f"Successfully logged in as {user.username}",
+                                            {"login": {"uuid": user.uuid,
+                                                       "token": user.token,
+                                                       "lifetime": lifetime.total_seconds()}})
 
 
 @auth.route("/test", methods=['GET'])
 @jwt_required()
-def get_test_login():
+def get_login():
     """
-    TODO: Update this docstring
-    Simply checks if you're properly logged in
+    Simply checks if you're properly logged in.
 
     :return: JSON-form
     """
@@ -68,15 +75,14 @@ def get_test_login():
 
     db_session.commit()
 
-    return {"status": 200, "response": f"Logged in as {user.username}", "uuid": user.uuid}, 200
+    return Utilities.return_custom_response(200, f"Logged in as {user.username}", {"login": {"uuid": user.uuid}})
 
 
 @auth.route("/admin/test", methods=['GET'])
 @admin_required()
-def get_admin_test_login():
+def get_admin_login():
     """
-    TODO: Update this docstring
-    Simply checks if you're properly logged in
+    Simply checks if you're properly logged in as an administrator.
 
     :return: JSON-form
     """
@@ -94,4 +100,5 @@ def get_admin_test_login():
 
     db_session.commit()
 
-    return {"status": 200, "response": f"Logged in as {user.username}", "uuid": user.uuid, "admin": True}, 200
+    return Utilities.return_custom_response(200, f"Logged in as {user.username}", {"login": {"uuid": user.uuid,
+                                                                                             "admin": user.admin}})

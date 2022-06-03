@@ -112,7 +112,38 @@ class Utilities:
         result = {
             "status": status,
             "message": message,
-            "details": details
+        }
+        result.update({"details": details})
+        return result, status
+
+    @staticmethod
+    def return_custom_response(status=200, message="This is a message", extra=None):
+        """
+        Generates a custom JSON response.\n
+        Returns a dictionary.\n
+        Appends a new dictionary to the standard one.\n
+
+        :return: Dictionary
+        """
+        result = {
+            "status": status,
+            "message": message,
+        }
+        result.update(extra)
+        return result, status
+
+    @staticmethod
+    def return_result(status=200, message="This is a message", result=None):
+        """
+        Generates an JSON response based on the successful result template.
+        Returns a dictionary.
+
+        :return: Dictionary
+        """
+        result = {
+            "status": status,
+            "message": message,
+            "result": result
         }
         return result, status
 

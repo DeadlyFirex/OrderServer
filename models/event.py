@@ -24,5 +24,4 @@ class Event(Base):
     max_order_price: float = Column(Float, nullable=False, default=20.0)
 
     def __repr__(self):
-        return f"<Event {self.name}>"
-
+        return f"<Event {self.uuid}>"
