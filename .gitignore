@@ -140,4 +140,6 @@ flaskr.db
 
 # Static files
 static/products/**
+static/products/*
+static/products/
 static/products.json
