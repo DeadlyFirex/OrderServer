@@ -1,5 +1,5 @@
 ## OrderServer
-[![Python package](https://github.com/DeadlyFirex/OrderServer/actions/workflows/pylint.yml/badge.svg)](https://github.com/DeadlyFirex/OrderServer/actions/workflows/pylint.yml) \
+[![Python package](https://github.com/DeadlyFirex/OrderServer/actions/workflows/pylint.yml/badge.svg)](https://github.com/DeadlyFirex/OrderServer/actions/workflows/pylint.yml) [![wakatime](https://wakatime.com/badge/user/a56c956d-565b-4ddd-a43e-fb7d155c4232/project/49805ccd-7c26-4262-b361-5b05415d3c0a.svg)](https://wakatime.com/badge/user/a56c956d-565b-4ddd-a43e-fb7d155c4232/project/49805ccd-7c26-4262-b361-5b05415d3c0a)\
 Backend for the order applications, does all the processing for all the applications ran.
 
 ### Description
