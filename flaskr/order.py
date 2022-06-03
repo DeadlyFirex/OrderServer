@@ -9,74 +9,59 @@ from models.product import Product
 from services.database import db_session
 from services.utilities import Utilities
 
-from datetime import datetime
-
 # Configure blueprint
 order = Blueprint('order', __name__, url_prefix='/order')
 
 
 @order.route("/current", methods=['GET'])
 @jwt_required()
-def get_order():
+def get_order_current():
     """
     Gets the current order for the current event for the user.
 
-    :return: JSON response.
+    :return: JSON result response with (current order) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
+
+    if current_user is None:
+        return Utilities.return_response(401, "Unauthorized")
+    current_user.perform_tracking(address=request.remote_addr)
+
     current_event = Event.query.filter_by(active=True).first()
 
-    if user is None:
-        return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "POST_CURRENT_ORDER"
-    user.last_action_at = datetime.utcnow()
-
-    # Check if an event exists in the first place
     if current_event is None:
         return Utilities.return_response(500, "No current event exists.")
 
     # Check if an order exists.
-    check = Order.query.filter_by(user=user.uuid, event=current_event.uuid).first()
-    if check is None:
+    current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
+
+    if current_order is None:
         return Utilities.return_response(404, "No order for current event exists, use /order/add instead.")
 
-
-    db_session.commit()
-
-    return Utilities.return_result(200, "Successfully retrieved current order", {"uuid": check.uuid,
-                                                                                 "products": check.products,
-                                                                                 "notes": check.notes})
+    return Utilities.return_result(200, "Successfully retrieved current order", {"uuid": current_order.uuid,
+                                                                                 "products": current_order.products,
+                                                                                 "notes": current_order.notes})
 
 
 @order.route("/<uuid>", methods=['GET'])
 @jwt_required()
 def get_order_by_uuid(uuid):
     """
-    Gets an order sorted by UUID for the user.
+    Gets an order by uuid for the user.
 
-    :return: JSON response.
+    :return: JSON result response with (order by uuid) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_SPECIFIC_ORDER"
-    user.last_action_at = datetime.utcnow()
+    current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an order exists.
-    current_order = Order.query.filter_by(user=user.uuid, uuid=uuid).first()
+    current_order = Order.query.filter_by(user=current_user.uuid, uuid=uuid).first()
+
     if current_order is None:
         return Utilities.return_response(404, f"No order found with UUID: {uuid}.")
-
-    db_session.commit()
 
     return Utilities.return_result(200, "Successfully retrieved current order", current_order)
 
@@ -87,90 +72,75 @@ def get_order_by_event(uuid):
     """
     Gets an order sorted by event for the user.
 
-    :return: JSON response.
+    :return: JSON result response with (order by event uuid) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_SPECIFIC_ORDER"
-    user.last_action_at = datetime.utcnow()
+    current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an order exists.
-    current_order = Order.query.filter_by(user=user.uuid, event=uuid).first()
+    current_order = Order.query.filter_by(user=current_user.uuid, event=uuid).first()
+
     if current_order is None:
         return Utilities.return_response(404, f"No order found with linked to event: {uuid}.")
-
-    db_session.commit()
 
     return Utilities.return_result(200, f"Successfully retrieved order for event {uuid}", current_order)
 
 
 @order.route("/all", methods=['GET'])
 @jwt_required()
-def get_all_orders():
+def get_order_all_for_user():
     """
-    Gets all orders sorted by UUID for the user.
+    Gets all orders sorted by uuid for the user.
 
-    :return: JSON response.
+    :return: JSON result response with a (list of events) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
+    # TODO: Look at the check for emptiness
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
+    current_user.perform_tracking(address=request.remote_addr)
 
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_SPECIFIC_ORDER"
-    user.last_action_at = datetime.utcnow()
+    # Check if any orders exist
+    current_order_list = Order.query.filter_by(user=current_user.uuid).all()
 
-    local_events = Order.query.filter_by(user=user.uuid).all()
+    if current_order_list is None or current_order_list == []:
+        return Utilities.return_response(404, "No orders found for any events.")
 
-    if local_events is None or local_events == []:
-        return Utilities.return_response(404, "No events found.")
-
-    db_session.commit()
-
-    return Utilities.return_result(200, f"Successfully retrieved {len(local_events)} orders", local_events)
+    return Utilities.return_result(200, f"Successfully retrieved {len(current_order_list)} orders", current_order_list)
 
 
 @order.route("/add", methods=['POST'])
 @jwt_required()
-def post_order():
+def post_order_add():
     """
     Adds an order to the current event for the user.
 
-    :return: JSON response.
+    :return: JSON detailed status response with (created event uuid) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-    current_event = Event.query.filter_by(active=True).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
 
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "POST_CURRENT_ORDER"
-    user.last_action_at = datetime.utcnow()
+    current_event = Event.query.filter_by(active=True).first()
 
-    # Check if an event exists in the first place
     if current_event is None:
         return Utilities.return_response(500, "No current event exists.")
 
     # Check if an order already exists.
-    check = Order.query.filter_by(user=user.uuid, event=current_event.uuid).first()
-    if check is not None:
+    current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
+
+    if current_order is not None:
         return Utilities.return_complex_response(409, "Order for current event already exists, use /order/edit instead.",
-                                                 {"uuid": check.uuid})
+                                                 {"uuid": current_order.uuid})
 
     try:
-        user = user.uuid
+        # TODO: Turn this validation into a utility
+        user = current_user.uuid
         total_price = 0.0
         event = current_event
         notes = request.json.get("notes", None)
@@ -203,13 +173,13 @@ def post_order():
     )
 
     db_session.add(new_order)
+    db_session.commit()
 
     # Rehash and re-stamp
     data = Data.query.first()
-    data.generate_hash("orders")
-    data.generate_timestamp("orders")
+    data.perform_changes("orders")
 
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     return Utilities.return_complex_response(201, "Successfully created new order", {"order": {"products": products,
                                                                                                "event": event.uuid,
@@ -219,78 +189,68 @@ def post_order():
 
 @order.route("/delete", methods=['DELETE'])
 @jwt_required()
-def delete_order():
+def delete_order_current():
     """
     Deletes an existing order for the current event for the user.
 
-    :return: JSON response.
+    :return: JSON detailed status response with (deletec event uuid) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-    current_event = Event.query.filter_by(active=True).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
 
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "DELETE_CURRENT_ORDER"
-    user.last_action_at = datetime.utcnow()
+    current_event = Event.query.filter_by(active=True).first()
 
-    # Check if an event exists in the first place
     if current_event is None:
         return Utilities.return_response(500, "No current event exists.")
 
     # Check if an order exists.
-    check = Order.query.filter_by(user=user.uuid, event=current_event.uuid).first()
-    if check is None:
+    current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
+    if current_order is None:
         return Utilities.return_response(404, "No order for current event exists, use /order/add instead.")
 
-    uuid = check.uuid
-    old = check.__repr__()
+    uuid = current_order.uuid
+    old = current_order.__repr__()
 
-    db_session.delete(check)
+    db_session.delete(current_order)
+    db_session.commit()
 
     # Rehash and re-stamp
     data = Data.query.first()
-    data.generate_hash("orders")
-    data.generate_timestamp("orders")
+    data.perform_changes("orders")
 
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     return Utilities.return_complex_response(200, f"Successfully deleted {old}", {"order": {"uuid": uuid}})
 
 
 @order.route("/edit", methods=['PUT'])
 @jwt_required()
-def put_order():
+def put_order_edit():
     """
     Edits an existing order for the current event for the user.
 
-    :return: JSON response.
+    :return: JSON detailed status response with (new order) data.
     """
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-    current_event = Event.query.filter_by(active=True).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
 
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "POST_CURRENT_ORDER"
-    user.last_action_at = datetime.utcnow()
+    current_event = Event.query.filter_by(active=True).first()
 
-    # Check if an event exists in the first place
     if current_event is None:
         return Utilities.return_response(500, "No current event exists.")
 
     # Check if an order exists.
-    current_order = Order.query.filter_by(user=user.uuid, event=current_event.uuid).first()
+    current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
+
     if current_order is None:
         return Utilities.return_response(404, "No order for current event exists, use /order/add instead.")
 
     try:
+        # TODO: Turn this validation into a utility
         total_price = 0.0
         event = current_event
         notes = request.json.get("notes", None)
@@ -318,12 +278,13 @@ def put_order():
     current_order.total_price = total_price
     current_order.notes = notes
 
+    db_session.commit()
+
     # Rehash and re-stamp
     data = Data.query.first()
-    data.generate_hash("orders")
-    data.generate_timestamp("orders")
+    data.perform_changes("orders")
 
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     return Utilities.return_complex_response(200, f"Successfully edited {current_order}",
                                              {"order": {"products": current_order.products,
@@ -334,25 +295,17 @@ def put_order():
 
 @order.route("/last_changed", methods=['GET'])
 @jwt_required()
-def get_orders_last_changed():
+def get_order_last_changed():
     """
-    Retrieves last changed timestamp and hash, indicating changes if different
+    Retrieves last changed timestamp and hash, indicating changes if different.
 
-    :return: JSON in result template.
+    :return: JSON result response with (last changed) data.
     """
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_ORDERS_LAST_CHANGED"
-    user.last_action_at = datetime.utcnow()
-
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()
 

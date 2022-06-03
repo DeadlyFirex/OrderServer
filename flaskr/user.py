@@ -1,70 +1,68 @@
-from flask import Blueprint
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from models.user import User
-from services.config import Config
-from services.database import db_session
-from services.utilities import Utilities, admin_required
+from services.utilities import Utilities
 
-config = Config().get_config()
+# Configure blueprint
 user = Blueprint('user', __name__, url_prefix='/user')
 
 
 @user.route("/<uuid>", methods=['GET'])
 @jwt_required()
-def get_user(uuid):
+def get_user_by_uuid(uuid):
     """
-    Simply checks the connection status and if the application exists.
+    Gets a single user by UUID and returns public information about them.
 
-    :return: JSON-form representing aliveness?
+    :return: JSON result response with (user) data.
     """
     if not Utilities.is_valid_uuid(uuid):
         return Utilities.return_response(400, "Expected UUID, received something else.")
 
-    local_user = User.query.filter_by(uuid=uuid).first()
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    if local_user is None:
+    if current_user is None:
+        return Utilities.return_response(401, "Unauthorized")
+    current_user.perform_tracking(address=request.remote_addr)
+
+    argument_user = User.query.filter_by(uuid=uuid).first()
+
+    if argument_user is None:
         return Utilities.return_response(404, f"User <{uuid}> not found.")
 
-    return Utilities.generate_public_user_payload(local_user)
+    return Utilities.return_result(200, "Fetched user successfully", {"uuid": argument_user.uuid,
+                                                                      "name": argument_user.name,
+                                                                      "username": argument_user.username,
+                                                                      "country": argument_user.country,
+                                                                      "admin": argument_user.admin,
+                                                                      "tags": argument_user.tags,
+                                                                      "active": argument_user.active})
 
 
 @user.route("/all", methods=['GET'])
 @jwt_required()
-def get_all_users():
+def get_user_all():
     """
-    Simply checks the connection status and if the application exists.
+    Get all users and returns public information about them.
 
-    :return: JSON-form representing aliveness?
+    :return: JSON result response with a (list of users) data.
     """
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    local_users = User.query.all()
+    if current_user is None:
+        return Utilities.return_response(401, "Unauthorized")
+    current_user.perform_tracking(address=request.remote_addr)
 
-    if local_users is None or []:
+    fetched_users = User.query.all()
+
+    if fetched_users is None or []:
         return Utilities.return_response(404, "No users were found.")
 
     result = []
 
-    for local_user in local_users:
-        result.append(Utilities.generate_public_user_payload(local_user, code=None))
+    for fetched_user in fetched_users:
+        result.append({"uuid": fetched_user.uuid, "name": fetched_user.name, "username": fetched_user.username,
+                       "country": fetched_user.country, "admin": fetched_user.admin, "tags": fetched_user.tags,
+                       "active": fetched_user.active})
 
-    return {"result": result}
-
-
-@user.route("/admin/<uuid>", methods=['GET'])
-@admin_required()
-def get_admin_user(uuid):
-    """
-    Simply checks the connection status and if the application exists.
-
-    :return: JSON-form representing aliveness?
-    """
-    if not Utilities.is_valid_uuid(uuid):
-        return Utilities.return_response(400, "Expected UUID, received something else.")
-
-    local_user = User.query.filter_by(uuid=uuid).first()
-
-    if local_user is None:
-        return Utilities.return_response(404, f"User <{uuid}> not found.")
-
-    return Utilities.generate_public_user_payload(local_user)
+    return Utilities.return_result(200, f"Successfully fetched {len(result)} users", result)

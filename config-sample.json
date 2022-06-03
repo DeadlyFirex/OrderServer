@@ -13,7 +13,8 @@
     "secret_length": 16
   },
   "ratelimiting": {
-    "default": "10 per second"
+    "default": "10 per second",
+    "authorization": "1 per second"
   },
   "database": {
     "local": true,

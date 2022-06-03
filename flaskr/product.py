@@ -4,37 +4,25 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.user import User
 from models.product import Product
 from models.data import Data
-from services.database import db_session
-from services.config import Config
 from services.utilities import Utilities
 
-from datetime import datetime
-
-config = Config().get_config()
+# Configure blueprint
 product = Blueprint('product', __name__, url_prefix='/product')
 
 
 @product.route("/all", methods=['GET'])
 @jwt_required()
-def get_all_products():
+def get_product_all():
     """
     Return all current products.
 
-    :return: JSON-form templating result format.
+    :return: JSON result response with a (list of product) data.
     """
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_ALL_PRODUCTS"
-    user.last_action_at = datetime.utcnow()
-
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     local_products = Product.query.all()
 
@@ -51,25 +39,17 @@ def get_all_products():
 
 @product.route("/<uuid>", methods=['GET'])
 @jwt_required()
-def get_product(uuid):
+def get_product_by_uuid(uuid):
     """
-    Retrieves one single product based on UUID.
+    Retrieves one single product based on uuid.
 
-    :return: JSON in result template.
+    :return: JSON result response with (product) data.
     """
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_PRODUCT"
-    user.last_action_at = datetime.utcnow()
-
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     local_product = Product.query.filter_by(uuid=uuid).first() or None
 
@@ -83,23 +63,15 @@ def get_product(uuid):
 @jwt_required()
 def get_products_last_changed():
     """
-    Retrieves last changed timestamp and hash, indicating changes if different
+    Retrieves last changed timestamp and hash, indicating changes if different.
 
-    :return: JSON in result template.
+    :return: JSON result response with (last changed) data.
     """
+    current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
-    user = User.query.filter_by(uuid=get_jwt_identity()).first()
-
-    if user is None:
+    if current_user is None:
         return Utilities.return_response(401, "Unauthorized")
-
-    user.active = True
-    user.last_login_at = datetime.utcnow()
-    user.last_login_ip = request.remote_addr
-    user.last_action = "GET_PRODUCTS_LAST_CHANGED"
-    user.last_action_at = datetime.utcnow()
-
-    db_session.commit()
+    current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()
 

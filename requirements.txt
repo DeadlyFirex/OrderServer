@@ -4,3 +4,4 @@ SQLAlchemy
 Flask-SQLAlchemy
 flask-jwt-extended[asymmetric_crypto]
 Flask-Limiter
+bcrypt

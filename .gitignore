@@ -137,3 +137,7 @@ config.json
 
 # Database files
 flaskr.db
+
+# Static files
+static/products/**
+static/products.json

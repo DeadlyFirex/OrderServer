@@ -1,0 +1,75 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "uuid": null,
+      "name": "Product Name",
+      "brand": "Product Brand",
+      "price": 0.95,
+      "category": "Product Category",
+      "description": "Product Description",
+      "image": "null or image base64",
+      "image_path": "/static/images/products/<product category>/<product brand>-<product name>.jpg",
+      "original_link": "link_to_product",
+      "nutri_score": "a/b/c/d/e",
+      "quantity": "in L or G",
+      "allergens": [
+        "Allergen",
+        "Another allergen"
+      ],
+      "ingredients": [
+        "An ingredient"
+      ],
+      "energy": 1180.0,
+      "fat": 1.0,
+      "saturated_fat": 1.0,
+      "unsaturated_fat": 0.0,
+      "carbohydrates": 33.0,
+      "sugars": 33.0,
+      "fiber": 0.0,
+      "proteins": 34.0,
+      "salt": 1.0,
+      "extra": [
+        {
+          "calcium": 1240.0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "uuid": null,
+      "name": "Crackers",
+      "brand": "Generic Brand",
+      "price": 1.15,
+      "category": "Biscuits",
+      "description": "A cracker is a flat, dry baked food typically made with flour. Flavorings or seasonings, such as salt, herbs, seeds, or cheese, may be added to the dough or sprinkled on top before baking. Crackers are often branded as a nutritious and convenient way to consume a staple food or cereal grain.",
+      "image": null,
+      "image_path": "/static/images/products/<product category>/generic-brand-crackers.jpg",
+      "original_link": "https://en.wikipedia.org/wiki/Cracker_(food)",
+      "nutri_score": "a",
+      "quantity": "0.5KG",
+      "allergens": [
+        "Gluten",
+        "Wheat"
+      ],
+      "ingredients": [
+        "Milk",
+        "Wheat"
+      ],
+      "energy": 180.0,
+      "fat": 1.0,
+      "saturated_fat": 1.0,
+      "unsaturated_fat": 0.0,
+      "carbohydrates": 33.0,
+      "sugars": 33.0,
+      "fiber": 0.0,
+      "proteins": 34.0,
+      "salt": 1.0,
+      "extra": [
+        {
+          "calcium": 1240.0
+        }
+      ]
+    }
+  ]
+}

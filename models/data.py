@@ -11,6 +11,10 @@ from datetime import datetime
 
 @dataclass
 class Data(Base):
+    """
+    Data class, for tracking changes within the other tables.\n
+    Update this using ``perform_changes()``.
+    """
     __tablename__ = 'data'
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
     uuid: str = Column(String, nullable=False, unique=True, default=str(uuid4()))
@@ -27,28 +31,33 @@ class Data(Base):
     orders_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())
     users_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())
 
-    def generate_hash(self, model):
-        result = md5(Utilities.generate_secret().encode("UTF-8")).hexdigest()
-        if model == "events":
-            self.events_hash = result
-        elif model == "products":
-            self.products_hash = result
-        elif model == "orders":
-            self.orders_hash = result
-        elif model == "users":
-            self.users_hash = result
-        else:
-            raise ValueError()
+    def perform_changes(self, model):
+        """
+        Performs changes to the hash and last_changed values of the Data row model.\n
+        Indicates changes to the given table. Automatically commits.\n
+        |
+        Valid values are ``events``, ``products``, ``orders`` and ``users``.\n
+        :param model: String indicating table
+        :return: Nothing
+        """
+        random_hash = md5(Utilities.generate_secret().encode("UTF-8")).hexdigest()
+        time = datetime.utcnow()
 
-    def generate_timestamp(self, model):
-        result = datetime.utcnow()
+        from services.database import db_session
+
         if model == "events":
-            self.events_last_changed = result
+            self.events_hash = random_hash
+            self.events_last_changed = time
         elif model == "products":
-            self.products_last_changed = result
+            self.products_hash = random_hash
+            self.products_last_changed = time
         elif model == "orders":
-            self.orders_last_changed = result
+            self.orders_hash = random_hash
+            self.orders_last_changed = time
         elif model == "users":
-            self.users_last_changed = result
+            self.users_hash = random_hash
+            self.users_last_changed = time
         else:
             raise ValueError()
+        db_session.commit()
+        return

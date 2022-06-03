@@ -8,6 +8,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Product(Base):
+    """
+    Product model representing a product.\n
+    This product is what orders can be placed upon.\n
+    """
+    # TODO: Add methods to make database changes easier.
     __tablename__ = 'products'
     # Core information
     id: int = Column(Integer, nullable=False, unique=True, primary_key=True)

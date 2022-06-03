@@ -5,7 +5,7 @@ from functools import wraps
 from uuid import UUID
 
 from services.config import Config
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 config = Config().get_config()
 
@@ -48,43 +48,6 @@ class Utilities:
         :return: Timedelta
         """
         result = timedelta(days=1)
-        return result
-
-    @staticmethod
-    def generate_user_payload(user):
-        """
-        Generates an ``additional claims`` dictionary.\n
-        Returns a dictionary.\n
-        |
-        :return: Dictionary
-        """
-        result = {
-            "username": user.username,
-            "admin": user.admin
-        }
-        return result
-
-    @staticmethod
-    def generate_public_user_payload(user, code=200):
-        """
-        Generates the JSON response the server returns for public user GETS.\n
-        Returns a dictionary.\n
-        |
-        :return: Dictionary
-        """
-        result = {
-            "uuid": user.uuid,
-            "name": user.name,
-            "username": user.username,
-            "country": user.country,
-
-            "admin": user.admin,
-            "tags": user.tags,
-
-            "active": user.active
-        }
-        if code is not None:
-            return result, code
         return result
 
     @staticmethod
@@ -146,6 +109,19 @@ class Utilities:
             "result": result
         }
         return result, status
+
+    @staticmethod
+    def calculate_time(start: datetime, end: datetime = datetime.now()):
+        """
+        Calculates time difference in milliseconds.\n
+        Returns the result in two decimal rounded string.
+
+        :param start: Start datetime object
+        :param end: End datetime object
+        :return: Time difference in milliseconds, string.
+        """
+        time = round((end - start).total_seconds() * 1000, 2)
+        return f"{time}ms"
 
     @staticmethod
     def is_valid_uuid(value):

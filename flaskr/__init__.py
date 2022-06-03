@@ -35,9 +35,10 @@ def create_app():
     )
 
     # Configure blueprints/views and ratelimiting
+    # TODO: Make every limit configurable
     limiter = Limiter(app, key_func=get_remote_address, default_limits=[config.ratelimiting.default])
     limiter.limit(config.ratelimiting.default)(admin.admin)
-    limiter.limit(config.ratelimiting.default)(auth.auth)
+    limiter.limit(config.ratelimiting.authorization)(auth.auth)
     limiter.limit(config.ratelimiting.default)(generics.generics)
     limiter.limit(config.ratelimiting.default)(order.order)
     limiter.limit(config.ratelimiting.default)(product.product)
@@ -55,6 +56,8 @@ def create_app():
     # Register JWT
     jwt = JWTManager(app).init_app(app)
 
+    # Check database status
+    # TODO: Improve this function to be more flexible.
     @app.before_first_request
     def first_time_run():
         app.logger.info("Checking for database initialization.")

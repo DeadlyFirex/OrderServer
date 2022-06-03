@@ -9,6 +9,12 @@ from dataclasses import dataclass
 
 @dataclass
 class Event(Base):
+    """
+    Event is an object orders are places upon.\n
+    Every event ends at some point, indicating when employees order.
+    """
+    # TODO: Decide if this will be manual/automatic.
+    # TODO: Add methods to make database changes easier.
     __tablename__ = 'events'
     # Core information
     id: int = Column(Integer, primary_key=True, nullable=False, unique=True)
