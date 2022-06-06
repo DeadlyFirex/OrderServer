@@ -24,16 +24,16 @@ def post_auth_login():
         password = request.json.get("password", None)
 
         if not isinstance(username, str):
-            raise ValueError(f"Expected str, instead got {type(username)}")
+            raise ValueError(f"Expected str, instead got {type(username)} for field <username>")
         if not isinstance(password, str):
-            raise ValueError(f"Expected str, instead got {type(password)}")
+            raise ValueError(f"Expected str, instead got {type(password)} for field <password>")
 
-    except AttributeError as e:
+    except (AttributeError, ValueError) as e:
         return Utilities.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
 
     user = User.query.filter_by(username=username).first()
 
-    if not checkpw(password.encode("UTF-8"), user.password.encode("UTF-8")):
+    if user is None or checkpw(password.encode("UTF-8"), user.password.encode("UTF-8")) is False:
         return Utilities.return_response(401, "Unauthorized, wrong username/password")
 
     lifetime = Utilities.generate_token_timedelta()
