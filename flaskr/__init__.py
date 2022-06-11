@@ -32,11 +32,16 @@ def create_app():
         DATABASE=path.join(app.instance_path, config.database.filename),
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{config.database.absolute_path}",
         JWT_SECRET_KEY=Utilities.generate_secret(),
+        RATELIMIT_ENABLED=True
     )
 
     # Configure blueprints/views and ratelimiting
     # TODO: Make every limit configurable
-    limiter = Limiter(app, key_func=get_remote_address, default_limits=[config.ratelimiting.default])
+    limiter = Limiter(app, key_func=get_remote_address, default_limits=[config.ratelimiting.default],
+                      storage_uri="memory://",
+                      enabled=True,
+                      headers_enabled=True
+                      )
     limiter.limit(config.ratelimiting.default)(admin.admin)
     limiter.limit(config.ratelimiting.authorization)(auth.auth)
     limiter.limit(config.ratelimiting.default)(generics.generics)
@@ -72,6 +77,14 @@ def create_app():
             app.logger.info("Repopulating database tables.")
             return
         app.logger.info("Finished checking, no new initialization required.")
+
+    @app.errorhandler(429)
+    def ratelimit_handler(e):
+        return {"status": 429, "message": f"Exceeded ratelimit: {e.description}"}, 429
+
+    @app.errorhandler(422)
+    def ratelimit_handler(e):
+        return {"status": 422, "message": f"Unable to verify token, probably due to restart: {e.description}"}, 422
 
     return app
 

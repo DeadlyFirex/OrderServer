@@ -1,12 +1,12 @@
+from dataclasses import dataclass
+from datetime import datetime
+from hashlib import md5
+from uuid import uuid4
+
 from sqlalchemy import DateTime, Column, String, Integer
 
 from services.database import Base
 from services.utilities import Utilities
-
-from dataclasses import dataclass
-from uuid import uuid4
-from hashlib import md5
-from datetime import datetime
 
 
 @dataclass
@@ -16,7 +16,7 @@ class Data(Base):
     Update this using ``perform_changes()``.
     """
     __tablename__ = 'data'
-    id = Column(Integer, primary_key=True, nullable=False, unique=True)
+    id: int = Column(Integer, primary_key=True, nullable=False, unique=True)
     uuid: str = Column(String, nullable=False, unique=True, default=str(uuid4()))
 
     # Tracking
@@ -61,3 +61,23 @@ class Data(Base):
             raise ValueError()
         db_session.commit()
         return
+
+    def parsed(self):
+        result = \
+            {
+                "id": 1,
+                "uuid": self.uuid,
+
+                "events_hash": self.events_hash,
+                "events_last_changed": self.events_last_changed.isoformat(),
+
+                "orders_hash": self.orders_hash,
+                "orders_last_changed": self.orders_last_changed.isoformat(),
+
+                "products_hash": self.products_hash,
+                "products_last_changed": self.products_last_changed.isoformat(),
+
+                "users_hash": self.users_hash,
+                "users_last_changed": self.users_last_changed.isoformat(),
+            },
+        return result

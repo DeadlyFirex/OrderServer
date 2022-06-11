@@ -59,7 +59,7 @@ def get_admin_product_populate():
     db_session.commit()
 
     # Rehash and re-stamp
-    Data.query.first().generate_changes("products")
+    Data.query.first().perform_changes("products")
 
     time = Utilities.calculate_time(start_time)
     return Utilities.return_complex_response(200, f"Successfully repopulated {count} products in {time}ms",

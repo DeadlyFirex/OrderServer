@@ -4,6 +4,7 @@ from models.data import Data
 from services.config import Config
 from services.utilities import Utilities
 
+# Configure blueprint
 config = Config().get_config()
 generics = Blueprint('generics', __name__, url_prefix='/')
 
@@ -30,6 +31,17 @@ def get_generics_version():
     return Utilities.return_complex_response(301, "ok", {"link": config.server.version})
 
 
+@generics.route("/ping", methods=['GET'])
+def get_generics_ping():
+    """
+    Returns a 204, no content to the sender. Exempt from limiters.
+
+    :return: Nothing.
+    """
+
+    return None, 204
+
+
 @generics.route("/last_changed", methods=['GET'])
 def get_generics_last_changed():
     """
@@ -37,5 +49,5 @@ def get_generics_last_changed():
 
     :return: JSON result response with (last changed) data.
     """
-
-    return Utilities.return_result(200, "Fetched result successfully", Data.query.first())
+    # TODO: Add parameter support for specifying datetime return type.
+    return Utilities.return_result(200, "Fetched result successfully", Data.query.first().parsed())
