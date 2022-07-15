@@ -1,14 +1,14 @@
+from datetime import datetime
+from uuid import uuid4
+
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity
 
-from models.user import User
-from models.product import Product
 from models.data import Data
+from models.product import Product
+from models.user import User
 from services.database import db_session
-from services.utilities import Utilities, admin_required
-
-from uuid import uuid4
-from datetime import datetime
+from services.utilities import Utilities as utils, admin_required
 
 # Configure blueprint
 admin = Blueprint('admin', __name__, url_prefix='/admin')
@@ -27,7 +27,7 @@ def get_admin_product_populate():
 
     # Perform tracking
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return utils.return_response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     # Track time taken
@@ -46,7 +46,8 @@ def get_admin_product_populate():
         # TODO: Improve this to automatic decoding/mapping
         new_product = Product(id=product["id"], uuid=str(uuid4()), name=product["name"], brand=product["brand"],
                               price=product["price"], category=product["category"], description=product["description"],
-                              image=product["image"], image_path=product["image_path"], original_link=product["original_link"],
+                              image=product["image"], image_path=product["image_path"],
+                              original_link=product["original_link"],
 
                               nutri_score=product["nutri_score"].upper(), quantity=product["quantity"],
                               allergens=product["allergens"], ingredients=product["ingredients"],
@@ -61,12 +62,55 @@ def get_admin_product_populate():
     # Rehash and re-stamp
     Data.query.first().perform_changes("products")
 
-    time = Utilities.calculate_time(start_time)
-    return Utilities.return_complex_response(200, f"Successfully repopulated {count} products in {time}ms",
-                                             {"count": count,
-                                              "time": f"{time}ms"
-                                              })
+    time = utils.calculate_time(start_time)
+    return utils.return_complex_response(200, f"Successfully repopulated {count} products in {time}ms",
+                                         {"count": count,
+                                          "time": f"{time}ms"
+                                          })
 
+
+@admin.route("/user/add", methods=['POST'])
+@admin_required()
+def post_admin_user_add():
+    """
+    Populate all products in the database.\n
+    This is retrieved from the ``products.json``.
+
+    :return: JSON status response.
+    """
+    try:
+        username: str = request.json.get("username", None)
+        name: str = request.json.get("name", None)
+        email: str = request.json.get("email", None)
+        phone_number: str = request.json.get("phone_number", None)
+        postal_code: str = request.json.get("postal_code", None)
+        address: str = request.json.get("address", None)
+
+        if not all(isinstance(i, str) for i in [username, name, email, phone_number, postal_code, address]):
+            raise ValueError(
+                f"Expected str, instead got [{type(username), type(name), type(email), type(phone_number), type(postal_code), type(address)}]")
+
+    except (AttributeError, ValueError) as e:
+        return utils.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
+
+    new_user = User(
+        name=name,
+        username=username,
+        email=utils.validate_email(email) or "invalid@email.com",
+        admin=False,
+        password=utils.generate_secret(),
+        address=address,
+        phone_number=utils.validate_phone(phone_number) or "0612345678",
+        postal_code=utils.validate_postalcode(postal_code) or "1234AB"
+    )
+
+    db_session.add(new_user)
+    User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
+
+    db_session.commit()
+
+    return utils.return_custom_response(201, f"Successfully created user {new_user.username}",
+                                        {"login": {"uuid": new_user.uuid, "password": new_user.password}})
 
 # @admin.route("/user/<uuid>", methods=['GET'])
 # @admin_required()
@@ -76,12 +120,12 @@ def get_admin_product_populate():
 #
 #     :return: JSON-form representing aliveness?
 #     """
-#     if not Utilities.is_valid_uuid(uuid):
-#         return Utilities.return_response(400, "Expected UUID, received something else.")
+#     if not utils.is_valid_uuid(uuid):
+#         return utils.return_response(400, "Expected UUID, received something else.")
 #
 #     local_user = User.query.filter_by(uuid=uuid).first()
 #
 #     if local_user is None:
-#         return Utilities.return_response(404, f"User <{uuid}> not found.")
+#         return utils.return_response(404, f"User <{uuid}> not found.")
 #
-#     return Utilities.generate_public_user_payload(local_user)
+#     return utils.generate_public_user_payload(local_user)

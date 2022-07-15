@@ -1,8 +1,11 @@
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 
+from flask import request
+
 from random import choice
 from functools import wraps
 from uuid import UUID
+from re import match
 
 from services.config import Config
 from datetime import timedelta, datetime
@@ -124,12 +127,30 @@ class Utilities:
         return f"{time}ms"
 
     @staticmethod
-    def is_valid_uuid(value):
+    def validate_uuid(value):
         try:
             UUID(value)
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def validate_email(email: str):
+        if match("""^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$""", email):
+            return email
+        return None
+
+    @staticmethod
+    def validate_phone(phone: str):
+        if phone.__len__() == 10 and phone.isnumeric():
+            return phone
+        return None
+
+    @staticmethod
+    def validate_postalcode(postal_code: str):
+        if match("""^[0-9]{4}[A-Z]{2}$""", postal_code):
+            return postal_code
+        return None
 
 
 def admin_required():
@@ -138,12 +159,9 @@ def admin_required():
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
             from models.user import User
-            user = User.query.filter_by(uuid=get_jwt_identity()).first()
-            if user.admin:
+            if User.query.filter_by(uuid=get_jwt_identity()).first().admin:
                 return fn(*args, **kwargs)
             else:
-                return Utilities.return_response(403, "Forbidden, no rights to access admin resources")
+                return Utilities.return_response(403, "Forbidden, no rights to access resource")
         return decorator
     return wrapper
-
-

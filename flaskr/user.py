@@ -16,7 +16,7 @@ def get_user_by_uuid(uuid):
 
     :return: JSON result response with (user) data.
     """
-    if not Utilities.is_valid_uuid(uuid):
+    if not Utilities.validate_uuid(uuid):
         return Utilities.return_response(400, "Expected UUID, received something else.")
 
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
