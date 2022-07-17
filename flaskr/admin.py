@@ -30,7 +30,7 @@ def get_admin_product_populate():
 
     # Perform tracking
     if current_user is None:
-        return utils.return_response(401, "Unauthorized")
+        return utils.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     # Track time taken
@@ -66,8 +66,8 @@ def get_admin_product_populate():
     Data.query.first().perform_changes("products")
 
     time = utils.calculate_time(start_time)
-    return utils.return_complex_response(200, f"Successfully repopulated {count} products in {time}ms",
-                                         {"count": count,
+    return utils.detailed_response(200, f"Successfully repopulated {count} products in {time}ms",
+                                   {"count": count,
                                           "time": f"{time}ms"
                                           })
 
@@ -94,7 +94,7 @@ def post_admin_user_add():
                 f"Expected str, instead got [{type(username), type(name), type(email), type(phone_number), type(postal_code), type(address)}]")
 
     except (AttributeError, ValueError) as e:
-        return utils.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
+        return utils.detailed_response(400, "Bad request, see details.", {"error": e.__str__()})
 
     raw_password = utils.generate_secret()
 
@@ -115,12 +115,12 @@ def post_admin_user_add():
 
         db_session.commit()
     except IntegrityError as error:
-        return utils.return_custom_response(400, f"Bad request, check details for more info",
-                                            {"error": error.args[0],
+        return utils.custom_response(400, f"Bad request, check details for more info",
+                                     {"error": error.args[0],
                                              "constraint": error.args[0].split(":")[1].removeprefix(" ")})
 
-    return utils.return_custom_response(201, f"Successfully created user {new_user.username}",
-                                        {"login": {"uuid": new_user.uuid, "password": raw_password}})
+    return utils.custom_response(201, f"Successfully created user {new_user.username}",
+                                 {"login": {"uuid": new_user.uuid, "password": raw_password}})
 
 
 @admin.route("/user/delete/<uuid>", methods=['DELETE'])
@@ -134,16 +134,16 @@ def post_admin_user_delete(uuid: str):
     """
 
     if not utils.validate_uuid(uuid):
-        return utils.return_response(400, "Bad request, given value is not a UUID.")
+        return utils.response(400, "Bad request, given value is not a UUID.")
 
     count = User.query.filter_by(uuid=uuid).delete()
 
     if count > 0:
         User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
         db_session.commit()
-        return utils.return_complex_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
+        return utils.detailed_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
 
-    return utils.return_response(404, f"User <{uuid}> not found, unable to delete.")
+    return utils.response(404, f"User <{uuid}> not found, unable to delete.")
 
 # @admin.route("/user/<uuid>", methods=['GET'])
 # @admin_required()

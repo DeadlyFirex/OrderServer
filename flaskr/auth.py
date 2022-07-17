@@ -29,12 +29,12 @@ def post_auth_login():
             raise ValueError(f"Expected str, instead got {type(password)} for field <password>")
 
     except (AttributeError, ValueError) as e:
-        return Utilities.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
+        return Utilities.detailed_response(400, "Bad request, see details.", {"error": e.__str__()})
 
     user = User.query.filter_by(username=username).first()
 
     if user is None or checkpw(password.encode("UTF-8"), user.password.encode("UTF-8")) is False:
-        return Utilities.return_response(401, "Unauthorized, wrong username/password")
+        return Utilities.response(401, "Unauthorized, wrong username/password")
 
     lifetime = Utilities.generate_token_timedelta()
     user.token = create_access_token(identity=user.uuid, fresh=False, expires_delta=lifetime,
@@ -43,8 +43,8 @@ def post_auth_login():
 
     user.perform_tracking(address=request.remote_addr, login=True)
 
-    return Utilities.return_custom_response(200, f"Successfully logged in as {user.username}",
-                                            {"login": {"uuid": user.uuid, "token": user.token,
+    return Utilities.custom_response(200, f"Successfully logged in as {user.username}",
+                                     {"login": {"uuid": user.uuid, "token": user.token,
                                                        "lifetime": lifetime.total_seconds()}})
 
 
@@ -59,11 +59,11 @@ def get_auth_test():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
-    return Utilities.return_custom_response(200, f"Logged in as {current_user.username}",
-                                            {"login": {"uuid": current_user.uuid}})
+    return Utilities.custom_response(200, f"Logged in as {current_user.username}",
+                                     {"login": {"uuid": current_user.uuid}})
 
 
 @auth.route("/admin/test", methods=['GET'])
@@ -77,8 +77,8 @@ def get_auth_admin_test():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
-    return Utilities.return_custom_response(200, f"Logged in as {current_user.username}",
-                                            {"login": {"uuid": current_user.uuid, "admin": current_user.admin}})
+    return Utilities.custom_response(200, f"Logged in as {current_user.username}",
+                                     {"login": {"uuid": current_user.uuid, "admin": current_user.admin}})

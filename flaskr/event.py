@@ -22,12 +22,12 @@ def get_event_current():
     current_event = Event.query.filter_by(active=True).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an event exists in the first place
     if current_event is None:
-        return Utilities.return_response(500, "No active event exists.")
+        return Utilities.response(500, "No active event exists.")
 
     return Utilities.return_result(200, "Successfully fetched current event", {"uuid": current_event.uuid})
 
@@ -43,14 +43,14 @@ def get_event_by_uuid(uuid):
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     current_event = Event.query.filter_by(uuid=uuid).first()
 
     # Check if an event exists in the first place
     if current_event is None:
-        return Utilities.return_response(404, f"No event found with UUID: {uuid}.")
+        return Utilities.response(404, f"No event found with UUID: {uuid}.")
 
     return Utilities.return_result(200, "Successfully fetched current event", current_event)
 
@@ -66,13 +66,13 @@ def get_event_all():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     local_events = Event.query.all()
 
     if local_events is None or local_events == []:
-        return Utilities.return_response(404, "No events found")
+        return Utilities.response(404, "No events found")
 
     return Utilities.return_result(200, "Successfully fetched current events", local_events)
 
@@ -88,7 +88,7 @@ def get_event_last_changed():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()

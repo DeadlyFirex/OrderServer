@@ -17,7 +17,7 @@ def get_generics_health():
     :return: JSON status response.
     """
 
-    return Utilities.return_response(200, "ok")
+    return Utilities.response(200, "ok")
 
 
 @generics.route("/version", methods=['GET'])
@@ -28,7 +28,7 @@ def get_generics_version():
     :return: JSON detailed status response with (link/version) data.
     """
 
-    return Utilities.return_complex_response(301, "ok", {"link": config.server.version})
+    return Utilities.detailed_response(301, "ok", {"link": config.server.version})
 
 
 @generics.route("/ping", methods=['GET'])

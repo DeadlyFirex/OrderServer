@@ -24,19 +24,19 @@ def get_order_current():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     current_event = Event.query.filter_by(active=True).first()
 
     if current_event is None:
-        return Utilities.return_response(500, "No current event exists.")
+        return Utilities.response(500, "No current event exists.")
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
 
     if current_order is None:
-        return Utilities.return_response(404, "No order for current event exists, use /order/add instead.")
+        return Utilities.response(404, "No order for current event exists, use /order/add instead.")
 
     return Utilities.return_result(200, "Successfully retrieved current order", {"uuid": current_order.uuid,
                                                                                  "products": current_order.products,
@@ -54,14 +54,14 @@ def get_order_by_uuid(uuid):
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, uuid=uuid).first()
 
     if current_order is None:
-        return Utilities.return_response(404, f"No order found with UUID: {uuid}.")
+        return Utilities.response(404, f"No order found with UUID: {uuid}.")
 
     return Utilities.return_result(200, "Successfully retrieved current order", current_order)
 
@@ -77,14 +77,14 @@ def get_order_by_event(uuid):
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, event=uuid).first()
 
     if current_order is None:
-        return Utilities.return_response(404, f"No order found with linked to event: {uuid}.")
+        return Utilities.response(404, f"No order found with linked to event: {uuid}.")
 
     return Utilities.return_result(200, f"Successfully retrieved order for event {uuid}", current_order)
 
@@ -101,14 +101,14 @@ def get_order_all_for_user():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     # Check if any orders exist
     current_order_list = Order.query.filter_by(user=current_user.uuid).all()
 
     if current_order_list is None or current_order_list == []:
-        return Utilities.return_response(404, "No orders found for any events.")
+        return Utilities.response(404, "No orders found for any events.")
 
     return Utilities.return_result(200, f"Successfully retrieved {len(current_order_list)} orders", current_order_list)
 
@@ -124,19 +124,19 @@ def post_order_add():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
 
     current_event = Event.query.filter_by(active=True).first()
 
     if current_event is None:
-        return Utilities.return_response(500, "No current event exists.")
+        return Utilities.response(500, "No current event exists.")
 
     # Check if an order already exists.
     current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
 
     if current_order is not None:
-        return Utilities.return_complex_response(409, "Order for current event already exists, use /order/edit instead.",
-                                                 {"uuid": current_order.uuid})
+        return Utilities.detailed_response(409, "Order for current event already exists, use /order/edit instead.",
+                                           {"uuid": current_order.uuid})
 
     try:
         # TODO: Turn this validation into a utility
@@ -162,7 +162,7 @@ def post_order_add():
             raise AttributeError(f"Price exceeded maximum: <{event.max_order_price}>")
 
     except AttributeError as e:
-        return Utilities.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
+        return Utilities.detailed_response(400, "Bad request, see details.", {"error": e.__str__()})
 
     new_order = Order(
         user=user,
@@ -181,7 +181,7 @@ def post_order_add():
 
     current_user.perform_tracking(address=request.remote_addr)
 
-    return Utilities.return_complex_response(201, "Successfully created new order", {"order": {"products": products,
+    return Utilities.detailed_response(201, "Successfully created new order", {"order": {"products": products,
                                                                                                "event": event.uuid,
                                                                                                "notes": notes,
                                                                                                "price": total_price}})
@@ -198,17 +198,17 @@ def delete_order_current():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
 
     current_event = Event.query.filter_by(active=True).first()
 
     if current_event is None:
-        return Utilities.return_response(500, "No current event exists.")
+        return Utilities.response(500, "No current event exists.")
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
     if current_order is None:
-        return Utilities.return_response(404, "No order for current event exists, use /order/add instead.")
+        return Utilities.response(404, "No order for current event exists, use /order/add instead.")
 
     uuid = current_order.uuid
     old = current_order.__repr__()
@@ -222,7 +222,7 @@ def delete_order_current():
 
     current_user.perform_tracking(address=request.remote_addr)
 
-    return Utilities.return_complex_response(200, f"Successfully deleted {old}", {"order": {"uuid": uuid}})
+    return Utilities.detailed_response(200, f"Successfully deleted {old}", {"order": {"uuid": uuid}})
 
 
 @order.route("/edit", methods=['PUT'])
@@ -236,18 +236,18 @@ def put_order_edit():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
 
     current_event = Event.query.filter_by(active=True).first()
 
     if current_event is None:
-        return Utilities.return_response(500, "No current event exists.")
+        return Utilities.response(500, "No current event exists.")
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, event=current_event.uuid).first()
 
     if current_order is None:
-        return Utilities.return_response(404, "No order for current event exists, use /order/add instead.")
+        return Utilities.response(404, "No order for current event exists, use /order/add instead.")
 
     try:
         # TODO: Turn this validation into a utility
@@ -272,7 +272,7 @@ def put_order_edit():
             raise AttributeError(f"Price exceeded maximum: <{event.max_order_price}>")
 
     except AttributeError as e:
-        return Utilities.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
+        return Utilities.detailed_response(400, "Bad request, see details.", {"error": e.__str__()})
 
     current_order.products = products
     current_order.total_price = total_price
@@ -286,8 +286,8 @@ def put_order_edit():
 
     current_user.perform_tracking(address=request.remote_addr)
 
-    return Utilities.return_complex_response(200, f"Successfully edited {current_order}",
-                                             {"order": {"products": current_order.products,
+    return Utilities.detailed_response(200, f"Successfully edited {current_order}",
+                                       {"order": {"products": current_order.products,
                                                         "event": event.uuid,
                                                         "notes": current_order.notes,
                                                         "price": current_order.total_price}})
@@ -304,7 +304,7 @@ def get_order_last_changed():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()

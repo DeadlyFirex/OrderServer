@@ -17,18 +17,18 @@ def get_user_by_uuid(uuid):
     :return: JSON result response with (user) data.
     """
     if not Utilities.validate_uuid(uuid):
-        return Utilities.return_response(400, "Expected UUID, received something else.")
+        return Utilities.response(400, "Expected UUID, received something else.")
 
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     argument_user = User.query.filter_by(uuid=uuid).first()
 
     if argument_user is None:
-        return Utilities.return_response(404, f"User <{uuid}> not found.")
+        return Utilities.response(404, f"User <{uuid}> not found.")
 
     return Utilities.return_result(200, "Fetched user successfully", {"uuid": argument_user.uuid,
                                                                       "name": argument_user.name,
@@ -50,13 +50,13 @@ def get_user_all():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     fetched_users = User.query.all()
 
     if fetched_users is None or []:
-        return Utilities.return_response(404, "No users were found.")
+        return Utilities.response(404, "No users were found.")
 
     result = []
 

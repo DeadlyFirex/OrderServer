@@ -21,13 +21,13 @@ def get_product_all():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     local_products = Product.query.all()
 
     if local_products is None or local_products == []:
-        return Utilities.return_response(404, "No products found")
+        return Utilities.response(404, "No products found")
 
     result = []
 
@@ -48,13 +48,13 @@ def get_product_by_uuid(uuid):
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     local_product = Product.query.filter_by(uuid=uuid).first() or None
 
     if local_product is None:
-        return Utilities.return_response(404, f"Product <{uuid}> not found")
+        return Utilities.response(404, f"Product <{uuid}> not found")
 
     return Utilities.return_result(200, "Fetched product successfully", local_product)
 
@@ -70,7 +70,7 @@ def get_products_last_changed():
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
     if current_user is None:
-        return Utilities.return_response(401, "Unauthorized")
+        return Utilities.response(401, "Unauthorized")
     current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()
