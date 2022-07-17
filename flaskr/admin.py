@@ -68,8 +68,8 @@ def get_admin_product_populate():
     time = utils.calculate_time(start_time)
     return utils.detailed_response(200, f"Successfully repopulated {count} products in {time}ms",
                                    {"count": count,
-                                          "time": f"{time}ms"
-                                          })
+                                    "time": f"{time}ms"
+                                    })
 
 
 @admin.route("/user/add", methods=['POST'])
@@ -81,6 +81,7 @@ def post_admin_user_add():
 
     :return: JSON status response.
     """
+
     try:
         username: str = request.json.get("username", None)
         name: str = request.json.get("name", None)
@@ -111,13 +112,12 @@ def post_admin_user_add():
         )
 
         db_session.add(new_user)
-        User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
-
         db_session.commit()
+
     except IntegrityError as error:
         return utils.custom_response(400, f"Bad request, check details for more info",
                                      {"error": error.args[0],
-                                             "constraint": error.args[0].split(":")[1].removeprefix(" ")})
+                                      "constraint": error.args[0].split(":")[1].removeprefix(" ")})
 
     return utils.custom_response(201, f"Successfully created user {new_user.username}",
                                  {"login": {"uuid": new_user.uuid, "password": raw_password}})
@@ -138,12 +138,33 @@ def post_admin_user_delete(uuid: str):
 
     count = User.query.filter_by(uuid=uuid).delete()
 
-    if count > 0:
-        User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
-        db_session.commit()
-        return utils.detailed_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
+    if count < 0:
+        return utils.response(404, f"User <{uuid}> not found, unable to delete.")
 
-    return utils.response(404, f"User <{uuid}> not found, unable to delete.")
+    db_session.commit()
+    return utils.detailed_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
+
+
+@admin.route("/product/delete/<uuid>", methods=['DELETE'])
+@admin_required()
+def post_admin_product_delete(uuid: str):
+    """
+    Deletes a product, handling an HTTP DELETE request.\n
+    This deletes a product based on UUID, if they exist.
+
+    :return: JSON status response.
+    """
+
+    if not utils.validate_uuid(uuid):
+        return utils.response(400, "Bad request, given value is not a UUID.")
+
+    count = Product.query.filter_by(uuid=uuid).delete()
+
+    if count < 0:
+        return utils.response(404, f"Product <{uuid}> not found, unable to delete.")
+
+    db_session.commit()
+    return utils.detailed_response(200, f"Successfully deleted {count} product", {"uuid": uuid})
 
 # @admin.route("/user/<uuid>", methods=['GET'])
 # @admin_required()
