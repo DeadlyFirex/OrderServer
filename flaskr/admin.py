@@ -1,6 +1,9 @@
 from datetime import datetime
 from uuid import uuid4
 
+from bcrypt import hashpw, gensalt
+from sqlalchemy.exc import IntegrityError
+
 from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity
 
@@ -73,8 +76,8 @@ def get_admin_product_populate():
 @admin_required()
 def post_admin_user_add():
     """
-    Populate all products in the database.\n
-    This is retrieved from the ``products.json``.
+    Add a user, handling an HTTP POST request. \n
+    This creates and adds a user to the database, if valid.
 
     :return: JSON status response.
     """
@@ -93,24 +96,54 @@ def post_admin_user_add():
     except (AttributeError, ValueError) as e:
         return utils.return_complex_response(400, "Bad request, see details.", {"error": e.__str__()})
 
-    new_user = User(
-        name=name,
-        username=username,
-        email=utils.validate_email(email) or "invalid@email.com",
-        admin=False,
-        password=utils.generate_secret(),
-        address=address,
-        phone_number=utils.validate_phone(phone_number) or "0612345678",
-        postal_code=utils.validate_postalcode(postal_code) or "1234AB"
-    )
+    raw_password = utils.generate_secret()
 
-    db_session.add(new_user)
-    User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
+    try:
+        new_user = User(
+            name=name,
+            username=username,
+            email=utils.validate_email(email) or "invalid@email.com",
+            admin=False,
+            password=hashpw(raw_password.encode("UTF-8"), gensalt()).decode("UTF-8"),
+            address=address,
+            phone_number=utils.validate_phone(phone_number) or "0612345678",
+            postal_code=utils.validate_postalcode(postal_code) or "1234AB"
+        )
 
-    db_session.commit()
+        db_session.add(new_user)
+        User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
+
+        db_session.commit()
+    except IntegrityError as error:
+        return utils.return_custom_response(400, f"Bad request, check details for more info",
+                                            {"error": error.args[0],
+                                             "constraint": error.args[0].split(":")[1].removeprefix(" ")})
 
     return utils.return_custom_response(201, f"Successfully created user {new_user.username}",
-                                        {"login": {"uuid": new_user.uuid, "password": new_user.password}})
+                                        {"login": {"uuid": new_user.uuid, "password": raw_password}})
+
+
+@admin.route("/user/delete/<uuid>", methods=['DELETE'])
+@admin_required()
+def post_admin_user_delete(uuid: str):
+    """
+    Deletes a user, handling an HTTP DELETE request.\n
+    This deletes a user based on UUID, if they exist.
+
+    :return: JSON status response.
+    """
+
+    if not utils.validate_uuid(uuid):
+        return utils.return_response(400, "Bad request, given value is not a UUID.")
+
+    count = User.query.filter_by(uuid=uuid).delete()
+
+    if count > 0:
+        User.query.filter_by(uuid=get_jwt_identity()).first().perform_tracking(address=request.remote_addr)
+        db_session.commit()
+        return utils.return_complex_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
+
+    return utils.return_response(404, f"User <{uuid}> not found, unable to delete.")
 
 # @admin.route("/user/<uuid>", methods=['GET'])
 # @admin_required()

@@ -25,8 +25,8 @@ class User(Base):
     name: str = Column(String, nullable=False, unique=True)
     email: str = Column(String, nullable=False, unique=True)
     phone_number: str = Column(String, nullable=False, unique=True)
-    address: str = Column(String, nullable=False, unique=True)
-    postal_code: str = Column(String, nullable=False, unique=True)
+    address: str = Column(String, nullable=False)
+    postal_code: str = Column(String, nullable=False)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow())
     country: str = Column(String, nullable=True, default="NL")
 
