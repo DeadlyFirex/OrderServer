@@ -1,9 +1,9 @@
 from flask import Blueprint, request
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, get_jwt_identity
 
 from models.user import User
 from services.database import db_session
-from services.utilities import Utilities, admin_required
+from services.utilities import Utilities, admin_required, user_required
 
 from bcrypt import checkpw
 
@@ -49,7 +49,7 @@ def post_auth_login():
 
 
 @auth.route("/test", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_auth_test():
     """
     Simply checks if you're properly logged in.
@@ -60,7 +60,6 @@ def get_auth_test():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     return Utilities.custom_response(200, f"Logged in as {current_user.username}",
                                      {"login": {"uuid": current_user.uuid}})
@@ -78,7 +77,6 @@ def get_auth_admin_test():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     return Utilities.custom_response(200, f"Logged in as {current_user.username}",
                                      {"login": {"uuid": current_user.uuid, "admin": current_user.admin}})

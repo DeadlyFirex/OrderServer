@@ -1,20 +1,20 @@
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 
 from models.data import Data
 from models.event import Event
-from models.user import User
 from models.order import Order
 from models.product import Product
+from models.user import User
 from services.database import db_session
-from services.utilities import Utilities
+from services.utilities import Utilities, user_required
 
 # Configure blueprint
 order = Blueprint('order', __name__, url_prefix='/order')
 
 
 @order.route("/current", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_order_current():
     """
     Gets the current order for the current event for the user.
@@ -25,7 +25,6 @@ def get_order_current():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     current_event = Event.query.filter_by(active=True).first()
 
@@ -44,7 +43,7 @@ def get_order_current():
 
 
 @order.route("/<uuid>", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_order_by_uuid(uuid):
     """
     Gets an order by uuid for the user.
@@ -55,7 +54,6 @@ def get_order_by_uuid(uuid):
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, uuid=uuid).first()
@@ -67,7 +65,7 @@ def get_order_by_uuid(uuid):
 
 
 @order.route("/event/<uuid>", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_order_by_event(uuid):
     """
     Gets an order sorted by event for the user.
@@ -78,7 +76,6 @@ def get_order_by_event(uuid):
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an order exists.
     current_order = Order.query.filter_by(user=current_user.uuid, event=uuid).first()
@@ -90,7 +87,7 @@ def get_order_by_event(uuid):
 
 
 @order.route("/all", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_order_all_for_user():
     """
     Gets all orders sorted by uuid for the user.
@@ -102,7 +99,6 @@ def get_order_all_for_user():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     # Check if any orders exist
     current_order_list = Order.query.filter_by(user=current_user.uuid).all()
@@ -114,7 +110,7 @@ def get_order_all_for_user():
 
 
 @order.route("/add", methods=['POST'])
-@jwt_required()
+@user_required()
 def post_order_add():
     """
     Adds an order to the current event for the user.
@@ -148,7 +144,7 @@ def post_order_add():
 
         if not isinstance(products, list):
             raise AttributeError(f"Expected list, instead got {type(products)}")
-        if not isinstance(notes, str) and notes is not None:
+        if not isinstance(notes, str):
             raise AttributeError(f"Expected string, instead got {type(notes)}")
         for product in products:
             if not isinstance(product, str):
@@ -179,16 +175,13 @@ def post_order_add():
     data = Data.query.first()
     data.perform_changes("orders")
 
-    current_user.perform_tracking(address=request.remote_addr)
-
-    return Utilities.detailed_response(201, "Successfully created new order", {"order": {"products": products,
-                                                                                               "event": event.uuid,
-                                                                                               "notes": notes,
-                                                                                               "price": total_price}})
+    return Utilities.detailed_response(201, "Successfully created new order",
+                                       {"order": {"products": products, "event": event.uuid,
+                                                  "notes": notes, "price": total_price}})
 
 
 @order.route("/delete", methods=['DELETE'])
-@jwt_required()
+@user_required()
 def delete_order_current():
     """
     Deletes an existing order for the current event for the user.
@@ -220,13 +213,11 @@ def delete_order_current():
     data = Data.query.first()
     data.perform_changes("orders")
 
-    current_user.perform_tracking(address=request.remote_addr)
-
     return Utilities.detailed_response(200, f"Successfully deleted {old}", {"order": {"uuid": uuid}})
 
 
 @order.route("/edit", methods=['PUT'])
-@jwt_required()
+@user_required()
 def put_order_edit():
     """
     Edits an existing order for the current event for the user.
@@ -284,17 +275,15 @@ def put_order_edit():
     data = Data.query.first()
     data.perform_changes("orders")
 
-    current_user.perform_tracking(address=request.remote_addr)
-
     return Utilities.detailed_response(200, f"Successfully edited {current_order}",
                                        {"order": {"products": current_order.products,
-                                                        "event": event.uuid,
-                                                        "notes": current_order.notes,
-                                                        "price": current_order.total_price}})
+                                                  "event": event.uuid,
+                                                  "notes": current_order.notes,
+                                                  "price": current_order.total_price}})
 
 
 @order.route("/last_changed", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_order_last_changed():
     """
     Retrieves last changed timestamp and hash, indicating changes if different.
@@ -305,7 +294,6 @@ def get_order_last_changed():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()
 

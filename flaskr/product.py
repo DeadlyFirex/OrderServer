@@ -1,17 +1,17 @@
-from flask import Blueprint, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint
+from flask_jwt_extended import get_jwt_identity
 
-from models.user import User
-from models.product import Product
 from models.data import Data
-from services.utilities import Utilities
+from models.product import Product
+from models.user import User
+from services.utilities import Utilities, user_required
 
 # Configure blueprint
 product = Blueprint('product', __name__, url_prefix='/product')
 
 
 @product.route("/all", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_product_all():
     """
     Return all current products.
@@ -22,7 +22,6 @@ def get_product_all():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     local_products = Product.query.all()
 
@@ -38,7 +37,7 @@ def get_product_all():
 
 
 @product.route("/<uuid>", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_product_by_uuid(uuid):
     """
     Retrieves one single product based on uuid.
@@ -49,7 +48,6 @@ def get_product_by_uuid(uuid):
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     local_product = Product.query.filter_by(uuid=uuid).first() or None
 
@@ -60,7 +58,7 @@ def get_product_by_uuid(uuid):
 
 
 @product.route("/last_changed", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_products_last_changed():
     """
     Retrieves last changed timestamp and hash, indicating changes if different.
@@ -71,7 +69,6 @@ def get_products_last_changed():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()
 

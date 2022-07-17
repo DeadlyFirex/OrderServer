@@ -1,17 +1,17 @@
-from flask import Blueprint, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint
+from flask_jwt_extended import get_jwt_identity
 
 from models.data import Data
 from models.event import Event
 from models.user import User
-from services.utilities import Utilities
+from services.utilities import Utilities, user_required
 
 # Configure blueprint
 event = Blueprint('event', __name__, url_prefix='/event')
 
 
 @event.route("/current", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_event_current():
     """
     Retrieves current event and return it's UUID.
@@ -23,7 +23,6 @@ def get_event_current():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     # Check if an event exists in the first place
     if current_event is None:
@@ -33,7 +32,7 @@ def get_event_current():
 
 
 @event.route("/<uuid>", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_event_by_uuid(uuid):
     """
     Retrieves specific event by UUID and returns its data.
@@ -44,7 +43,6 @@ def get_event_by_uuid(uuid):
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     current_event = Event.query.filter_by(uuid=uuid).first()
 
@@ -56,7 +54,7 @@ def get_event_by_uuid(uuid):
 
 
 @event.route("/all", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_event_all():
     """
     Retrieves all current events and posts their status and UUID.
@@ -67,7 +65,6 @@ def get_event_all():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     local_events = Event.query.all()
 
@@ -78,7 +75,7 @@ def get_event_all():
 
 
 @event.route("/last_changed", methods=['GET'])
-@jwt_required()
+@user_required()
 def get_event_last_changed():
     """
     Retrieves last changed timestamp and hash, indicating changes if different.
@@ -89,7 +86,6 @@ def get_event_last_changed():
 
     if current_user is None:
         return Utilities.response(401, "Unauthorized")
-    current_user.perform_tracking(address=request.remote_addr)
 
     data = Data.query.first()
 
