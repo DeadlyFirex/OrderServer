@@ -138,7 +138,7 @@ def post_admin_user_delete(uuid: str):
 
     count = User.query.filter_by(uuid=uuid).delete()
 
-    if count < 0:
+    if count < 1:
         return utils.response(404, f"User <{uuid}> not found, unable to delete.")
 
     db_session.commit()
@@ -160,7 +160,7 @@ def post_admin_product_delete(uuid: str):
 
     count = Product.query.filter_by(uuid=uuid).delete()
 
-    if count < 0:
+    if count < 1:
         return utils.response(404, f"Product <{uuid}> not found, unable to delete.")
 
     db_session.commit()
