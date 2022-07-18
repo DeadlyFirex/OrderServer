@@ -8,6 +8,7 @@ from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity
 
 from models.data import Data
+from models.event import Event
 from models.product import Product
 from models.user import User
 from services.database import db_session
@@ -176,6 +177,28 @@ def post_admin_product_delete(uuid: str):
 
     db_session.commit()
     return utils.detailed_response(200, f"Successfully deleted {count} product", {"uuid": uuid})
+
+
+@admin.route("/event/delete/<uuid>", methods=['DELETE'])
+@admin_required()
+def post_admin_event_delete(uuid: str):
+    """
+    Deletes an event, handling an HTTP DELETE request.\n
+    This deletes a product based on UUID, if they exist.
+
+    :return: JSON status response.
+    """
+
+    if not utils.validate_uuid(uuid):
+        return utils.response(400, "Bad request, given value is not a UUID.")
+
+    count = Event.query.filter_by(uuid=uuid).delete()
+
+    if count < 1:
+        return utils.response(404, f"Event <{uuid}> not found, unable to delete.")
+
+    db_session.commit()
+    return utils.detailed_response(200, f"Successfully deleted {count} event", {"uuid": uuid})
 
 # @admin.route("/user/<uuid>", methods=['GET'])
 # @admin_required()

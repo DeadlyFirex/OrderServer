@@ -7,11 +7,9 @@ from services.config import Config
 from bcrypt import hashpw, gensalt
 
 config = Config().get_config()
-engine = create_engine(f"sqlite:///{config.database.absolute_path}",
-                       convert_unicode=True, connect_args={"check_same_thread": False})
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
+engine = create_engine(f"sqlite:///{config.database.absolute_path}", convert_unicode=True,
+                       connect_args={"check_same_thread": False})
+db_session = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=engine))
 Base = declarative_base()
 Base.query = db_session.query_property()
 
@@ -24,7 +22,5 @@ def init_db():
     event = event.Event()
     data = data.Data()
     Base.metadata.create_all(bind=engine)
-    db_session.add(user)
-    db_session.add(event)
-    db_session.add(data)
+    db_session.add_all([user, event, data])
     db_session.commit()
