@@ -145,6 +145,17 @@ def post_admin_user_delete(uuid: str):
     return utils.detailed_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
 
 
+@admin.route("/product/add", methods=['POST'])
+@admin_required()
+def post_admin_product_add():
+    """
+    Placeholder. New products should be added through product.json.
+
+    :return: JSON status response.
+    """
+    return utils.response(301, "Unsupported, instead, check /admin/product/populate")
+
+
 @admin.route("/product/delete/<uuid>", methods=['DELETE'])
 @admin_required()
 def post_admin_product_delete(uuid: str):

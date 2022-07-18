@@ -45,7 +45,7 @@ def post_auth_login():
 
     return Utilities.custom_response(200, f"Successfully logged in as {user.username}",
                                      {"login": {"uuid": user.uuid, "token": user.token,
-                                                       "lifetime": lifetime.total_seconds()}})
+                                                "lifetime": lifetime.total_seconds()}})
 
 
 @auth.route("/test", methods=['GET'])

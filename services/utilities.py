@@ -114,7 +114,7 @@ class Utilities:
         return result, status
 
     @staticmethod
-    def return_result(status: int = 200, message: str = "This is a message", result: Union[str, dict] = None):
+    def return_result(status: int = 200, message: str = "This is a message", result: Union[str, dict, list] = None):
         """
         Generates an JSON response based on the successful result template.
         Returns a dictionary.

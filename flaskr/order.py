@@ -186,7 +186,7 @@ def delete_order_current():
     """
     Deletes an existing order for the current event for the user.
 
-    :return: JSON detailed status response with (deletec event uuid) data.
+    :return: JSON detailed status response with (deleted event uuid) data.
     """
     current_user = User.query.filter_by(uuid=get_jwt_identity()).first()
 
