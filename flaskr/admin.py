@@ -120,6 +120,9 @@ def post_admin_user_add():
                                      {"error": error.args[0],
                                       "constraint": error.args[0].split(":")[1].removeprefix(" ")})
 
+    # Rehash and re-stamp
+    Data.query.first().perform_changes("users")
+
     return utils.custom_response(201, f"Successfully created user {new_user.username}",
                                  {"login": {"uuid": new_user.uuid, "password": raw_password}})
 
@@ -143,6 +146,10 @@ def post_admin_user_delete(uuid: str):
         return utils.response(404, f"User <{uuid}> not found, unable to delete.")
 
     db_session.commit()
+
+    # Rehash and re-stamp
+    Data.query.first().perform_changes("users")
+
     return utils.detailed_response(200, f"Successfully deleted {count} user", {"uuid": uuid})
 
 
@@ -176,6 +183,10 @@ def post_admin_product_delete(uuid: str):
         return utils.response(404, f"Product <{uuid}> not found, unable to delete.")
 
     db_session.commit()
+
+    # Rehash and re-stamp
+    Data.query.first().perform_changes("products")
+
     return utils.detailed_response(200, f"Successfully deleted {count} product", {"uuid": uuid})
 
 
@@ -198,6 +209,10 @@ def post_admin_event_delete(uuid: str):
         return utils.response(404, f"Event <{uuid}> not found, unable to delete.")
 
     db_session.commit()
+
+    # Rehash and re-stamp
+    Data.query.first().perform_changes("events")
+
     return utils.detailed_response(200, f"Successfully deleted {count} event", {"uuid": uuid})
 
 # @admin.route("/user/<uuid>", methods=['GET'])
