@@ -39,7 +39,7 @@ def get_generics_ping():
     :return: Nothing.
     """
 
-    return None, 204
+    return "", 204
 
 
 @generics.route("/last_changed", methods=['GET'])

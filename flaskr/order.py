@@ -176,7 +176,7 @@ def post_order_add():
     data.perform_changes("orders")
 
     return Utilities.detailed_response(201, "Successfully created new order",
-                                       {"order": {"products": products, "event": event.uuid,
+                                       {"order": {"uuid": new_order.uuid,"products": products, "event": event.uuid,
                                                   "notes": notes, "price": total_price}})
 
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from bcrypt import hashpw, gensalt
@@ -215,20 +215,34 @@ def post_admin_event_delete(uuid: str):
 
     return utils.detailed_response(200, f"Successfully deleted {count} event", {"uuid": uuid})
 
-# @admin.route("/user/<uuid>", methods=['GET'])
-# @admin_required()
-# def get_admin_user(uuid):
-#     """
-#     Simply checks the connection status and if the application exists.
-#
-#     :return: JSON-form representing aliveness?
-#     """
-#     if not utils.is_valid_uuid(uuid):
-#         return utils.return_response(400, "Expected UUID, received something else.")
-#
-#     local_user = User.query.filter_by(uuid=uuid).first()
-#
-#     if local_user is None:
-#         return utils.return_response(404, f"User <{uuid}> not found.")
-#
-#     return utils.generate_public_user_payload(local_user)
+
+@admin.route("/event/create", methods=['POST'])
+@admin_required()
+def post_admin_event_create():
+    """
+    Creates an event, handling an HTTP POST request.\n
+    This creates a new event dependant if the previous is ending.
+
+    :return: JSON status response.
+    """
+    last_event = Event.query.first()
+
+    if last_event is None:
+        return utils.error_response(404, "Didn't find any events", "Unable to find any event")
+
+    difference = (last_event.until - datetime.utcnow()).total_seconds()
+
+    if not difference >= 70000:
+        return utils.error_response(425, "Too early to create a new event", f"{70000 - difference} to wait")
+
+    new_event = Event(
+        created_at=last_event.created + timedelta(days=7),
+        until=last_event.until + timedelta(days=7),
+        deadline=last_event.deadline + timedelta(days=7)
+    )
+
+    Data.query.first().perform_changes("events")
+    db_session.add(new_event)
+    db_session.commit()
+
+    return utils.return_result(201, f"Successfully created event", new_event)

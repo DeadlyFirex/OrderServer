@@ -62,7 +62,7 @@ def get_auth_test():
         return Utilities.response(401, "Unauthorized")
 
     return Utilities.custom_response(200, f"Logged in as {current_user.username}",
-                                     {"login": {"uuid": current_user.uuid}})
+                                     {"login": {"uuid": current_user.uuid, "admin": current_user.admin}})
 
 
 @auth.route("/admin/test", methods=['GET'])

@@ -85,3 +85,13 @@ def get_user_last_changed():
     return Utilities.return_result(200, "Successfully fetched users last changed",
                                    {"users_hash": data.users_hash,
                                     "users_last_changed": data.users_last_changed})
+
+
+@user.route("/alive", methods=['GET'])
+@user_required()
+def get_user_alive():
+    """
+    :return: Nothing.
+    """
+
+    return "", 204
