@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, String, PickleType, Integer
+from sqlalchemy import Column, Float, String, PickleType, Integer, Text
 
 from services.database import Base
 
@@ -17,20 +17,20 @@ class Product(Base):
     # Core information
     id: int = Column(Integer, nullable=False, unique=True, primary_key=True)
     uuid: str = Column(String(36), nullable=False, default=str(uuid4()))
-    name: str = Column(String, nullable=False, unique=True)
-    brand: str = Column(String, nullable=False)
+    name: str = Column(String(50), nullable=False, unique=True)
+    brand: str = Column(String(30), nullable=False)
     price: float = Column(Float, nullable=False)
 
     # Unique product information
-    category: str = Column(String, nullable=False)
-    description: str = Column(String, nullable=False)
-    image: str = Column(String, nullable=False)
-    image_path: str = Column(String, nullable=False)
-    original_link: str = Column(String, nullable=False)
+    category: str = Column(String(30), nullable=False)
+    description: str = Column(Text, nullable=False)
+    image: str = Column(Text, nullable=False)
+    image_path: str = Column(String(200), nullable=False)
+    original_link: str = Column(String(200), nullable=False)
 
     # Tracking and analytics information
-    nutri_score: str = Column(String, nullable=True)
-    quantity: str = Column(String, nullable=True)
+    nutri_score: str = Column(String(5), nullable=True)
+    quantity: str = Column(String(10), nullable=True)
     allergens: list = Column(PickleType, default=[], nullable=True)
     ingredients: list = Column(PickleType, default=[], nullable=True)
 

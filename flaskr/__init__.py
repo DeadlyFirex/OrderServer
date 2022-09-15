@@ -2,7 +2,7 @@ from flask import Flask
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from flaskr import admin, auth, generics, order, product, user, event
 from models.data import Data
@@ -30,7 +30,7 @@ def create_app():
         DEBUG=config.application.debug,
         SECRET_KEY=Utilities.generate_secret(),
         DATABASE=path.join(app.instance_path, config.database.filename),
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///{config.database.absolute_path}",
+        SQLALCHEMY_DATABASE_URI=config.database.type + config.database.absolute_path,
         JWT_SECRET_KEY=Utilities.generate_secret(),
         RATELIMIT_ENABLED=True
     )
@@ -68,7 +68,7 @@ def create_app():
         app.logger.info("Checking for database initialization.")
         try:
             result = (User.query.all(), Event.query.all(), Data.query.all())
-        except OperationalError:
+        except:
             init_db()
             app.logger.info("Performing new database initialization.")
             return

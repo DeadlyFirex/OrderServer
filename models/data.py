@@ -17,13 +17,13 @@ class Data(Base):
     """
     __tablename__ = 'data'
     id: int = Column(Integer, primary_key=True, nullable=False, unique=True)
-    uuid: str = Column(String, nullable=False, unique=True, default=str(uuid4()))
+    uuid: str = Column(String(36), nullable=False, unique=True, default=str(uuid4()))
 
     # Tracking
-    events_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
-    products_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
-    orders_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
-    users_hash: str = Column(String, nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
+    events_hash: str = Column(String(100), nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
+    products_hash: str = Column(String(100), nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
+    orders_hash: str = Column(String(100), nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
+    users_hash: str = Column(String(100), nullable=True, default=md5(Utilities.generate_secret().encode("UTF-8")).hexdigest())
 
     # Time-tracking
     events_last_changed: datetime = Column(DateTime, nullable=True, default=datetime.utcnow())

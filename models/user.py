@@ -20,31 +20,31 @@ class User(Base):
     __tablename__ = 'users'
     # User-specific information
     id: int = Column(Integer, primary_key=True, nullable=False, unique=True)
-    uuid: str = Column(String, nullable=False, unique=True, default=str(uuid4()))
-    username: str = Column(String, nullable=False, unique=True)
-    name: str = Column(String, nullable=False, unique=True)
-    email: str = Column(String, nullable=False, unique=True)
-    phone_number: str = Column(String, nullable=False, unique=True)
-    address: str = Column(String, nullable=False)
-    postal_code: str = Column(String, nullable=False)
+    uuid: str = Column(String(36), nullable=False, unique=True, default=str(uuid4()))
+    username: str = Column(String(50), nullable=False, unique=True)
+    name: str = Column(String(50), nullable=False, unique=True)
+    email: str = Column(String(50), nullable=False, unique=True)
+    phone_number: str = Column(String(20), nullable=False, unique=True)
+    address: str = Column(String(50), nullable=False)
+    postal_code: str = Column(String(10), nullable=False)
     created_at: datetime = Column(DateTime, nullable=False, default=datetime.utcnow())
-    country: str = Column(String, nullable=True, default="NL")
+    country: str = Column(String(20), nullable=True, default="NL")
 
     # Clearance/security/authentication
     flags: list = Column(PickleType, nullable=False, default=[])
     admin: bool = Column(Boolean, nullable=False, default=False)
-    password: str = Column(String, nullable=False)
-    secret: str = Column(String, nullable=True, unique=True, default=Utilities.generate_secret())
-    token: str = Column(String, nullable=True, unique=True, default=None)
+    password: str = Column(String(200), nullable=False)
+    secret: str = Column(String(50), nullable=True, unique=True, default=Utilities.generate_secret())
+    token: str = Column(String(500), nullable=True, unique=True, default=None)
     tags: list = Column(PickleType, nullable=False, default=[])
 
     # Tracking
     active: bool = Column(Boolean, nullable=True, default=None)
     last_action_at: datetime = Column(DateTime, nullable=True, default=None)
-    last_action_ip: str = Column(String, nullable=True, default=None)
-    last_action: str = Column(String, nullable=True, default=None)
+    last_action_ip: str = Column(String(50), nullable=True, default=None)
+    last_action: str = Column(String(50), nullable=True, default=None)
     last_login_at: datetime = Column(DateTime, nullable=True, default=None)
-    last_login_ip: str = Column(String, nullable=True, default=None)
+    last_login_ip: str = Column(String(50), nullable=True, default=None)
     login_count: int = Column(Integer, nullable=True, default=0)
 
     def get_fullname(self):

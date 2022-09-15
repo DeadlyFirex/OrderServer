@@ -7,8 +7,8 @@ from services.config import Config
 from bcrypt import hashpw, gensalt
 
 config = Config().get_config()
-engine = create_engine(f"sqlite:///{config.database.absolute_path}", convert_unicode=True,
-                       connect_args={"check_same_thread": False})
+engine = create_engine(config.database.type + config.database.absolute_path, convert_unicode=True)
+# connect_args={"check_same_thread": False})
 db_session = scoped_session(sessionmaker(autocommit=False, autoflush=True, bind=engine))
 Base = declarative_base()
 Base.query = db_session.query_property()
